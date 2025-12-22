@@ -29,6 +29,7 @@ AllocationResult BuddyAllocator::allocate(const AllocationRequest &request)
 {
     if (request.size == 0 || request.size > total_memory_)
     {
+        allocation_failures_++;
         return AllocationResult(false, 0, -1);
     }
 
@@ -43,6 +44,7 @@ AllocationResult BuddyAllocator::allocate(const AllocationRequest &request)
 
     if (order > max_order_)
     {
+        allocation_failures_++;
         return AllocationResult(false, 0, -1);
     }
 
@@ -56,6 +58,9 @@ AllocationResult BuddyAllocator::allocate(const AllocationRequest &request)
     free_lists_[order].pop_front();
 
     allocated_blocks_[address] = make_pair(required_order, request.process_id);
+
+    allocation_successes_++;
+    internal_fragmentation_ += (actual_size - request.size);
 
     return AllocationResult(true, address, static_cast<BlockId>(address));
 }
@@ -90,20 +95,10 @@ MemoryStats BuddyAllocator::getStats() const
     stats.total_blocks = allocated_blocks_.size();
     stats.allocated_blocks = allocated_blocks_.size();
 
-    Size internal_frag = 0;
-
-    for (const auto &pair : allocated_blocks_)
-    {
-        int order = pair.second.first;
-        Size block_size = getBlockSize(order);
-        internal_frag += 0;
-    }
-
-    stats.internal_fragmentation = internal_frag;
-    stats.fragmentation_ratio =
-        stats.used_memory > 0
-            ? static_cast<double>(internal_frag) / stats.used_memory
-            : 0.0;
+    stats.internal_fragmentation = internal_fragmentation_;
+    stats.allocation_requests = allocation_requests_;
+    stats.allocation_successes = allocation_successes_;
+    stats.allocation_failures = allocation_failures_;
 
     size_t free_count = 0;
     Size largest_free = 0;
@@ -119,6 +114,15 @@ MemoryStats BuddyAllocator::getStats() const
 
     stats.free_blocks = free_count;
     stats.largest_free_block = largest_free;
+    if (stats.free_memory > 0)
+    {
+        stats.fragmentation_ratio =
+            1.0 - (static_cast<double>(stats.largest_free_block) / stats.free_memory);
+    }
+    else
+    {
+        stats.fragmentation_ratio = 0.0;
+    }
 
     return stats;
 }

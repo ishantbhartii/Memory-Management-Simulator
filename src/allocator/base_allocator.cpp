@@ -38,38 +38,48 @@ bool BaseAllocator::deallocate(BlockId block_id) {
     return true;
 }
 
-MemoryStats BaseAllocator::getStats() const {
+MemoryStats BaseAllocator::getStats() const
+{
     MemoryStats stats;
     stats.total_memory = total_memory_;
-    stats.total_blocks = memory_blocks_.size();
 
     Size used = 0;
+    Size free = 0;
     Size largest_free = 0;
 
     for (const auto& block : memory_blocks_) {
         if (block.status == BlockStatus::ALLOCATED) {
             used += block.size;
-            stats.allocated_blocks++;
         } else {
-            stats.free_blocks++;
-            if (block.size > largest_free) {
-                largest_free = block.size;
-            }
+            free += block.size;
+            largest_free = max(largest_free, block.size);
         }
     }
 
     stats.used_memory = used;
-    stats.free_memory = total_memory_ - used;
+    stats.free_memory = free;
+    stats.total_blocks = memory_blocks_.size();
+
+    stats.allocated_blocks = allocation_successes_;
+    stats.free_blocks = stats.total_blocks - stats.allocated_blocks;
+
     stats.largest_free_block = largest_free;
-    stats.fragmentation_ratio = 0.0;
+    stats.internal_fragmentation = internal_fragmentation_;
+
     stats.allocation_requests = allocation_requests_;
     stats.allocation_successes = allocation_successes_;
     stats.allocation_failures = allocation_failures_;
-    stats.internal_fragmentation = internal_fragmentation_;
 
+    if (free > 0) {
+        stats.fragmentation_ratio =
+            1.0 - (static_cast<double>(largest_free) / free);
+    } else {
+        stats.fragmentation_ratio = 0.0;
+    }
 
     return stats;
 }
+
 
 const vector<MemoryBlock>& BaseAllocator::getBlocks() const {
     return memory_blocks_;

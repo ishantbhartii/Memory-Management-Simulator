@@ -20,23 +20,16 @@ AllocationResult FirstFitAllocator::allocate(const AllocationRequest& request) {
 
     Address alloc_address = block_it->start_address;
     BlockId alloc_block_id = block_it->block_id;
-
-    Size original_size = block_it->size;
     if (block_it->size > request.size) {
+        internal_fragmentation_ += (block_it->size - request.size);
         splitBlock(block_it, request.size);
         block_it = findBlockById(alloc_block_id);
-        if (block_it == memory_blocks_.end()) {
-            allocation_failures_++;
-            return AllocationResult(false, 0, -1);
-        }
     }
 
     block_it->status = BlockStatus::ALLOCATED;
     block_it->process_id = request.process_id;
 
     allocation_successes_++;
-    internal_fragmentation_ += (original_size - request.size);
-
     return AllocationResult(true, alloc_address, alloc_block_id);
 }
 
