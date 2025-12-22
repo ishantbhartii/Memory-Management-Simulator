@@ -17,8 +17,8 @@ IntegratedMemorySystem::IntegratedMemorySystem(
     : total_memory_(total_memory),
       page_size_(page_size),
       alloc_strategy_(alloc_strategy),
+      allocation_mode_(AllocationMode::AUTO),   
       page_replacement_policy_(page_policy),
-      allocation_mode_(AllocationMode::AUTO),
       initialized_(false),
       total_operations_(0),
       cache_hits_(0),
@@ -33,6 +33,8 @@ bool IntegratedMemorySystem::initialize()
     {
         physical_allocator_ = createAllocator(alloc_strategy_, total_memory_);
         physical_allocator_->initialize(total_memory_);
+        allocation_mode_ = AllocationMode::AUTO;
+
 
         Size buddy_memory = total_memory_ / 2;
         if (!isPowerOfTwo(buddy_memory))
@@ -117,40 +119,32 @@ AllocationResult IntegratedMemorySystem::allocateMemory(ProcessId process_id, Si
     if (it == process_allocations_.end())
         return AllocationResult(false, 0, -1);
 
-    AllocationResult result(false, 0, -1);
-    bool used_buddy = false;
+    bool use_buddy = false;
 
     if (allocation_mode_ == AllocationMode::BUDDY)
-    {
-        result = buddy_allocator_->allocate({size, process_id});
-        used_buddy = true;
-    }
+        use_buddy = true;
     else if (allocation_mode_ == AllocationMode::PHYSICAL)
+        use_buddy = false;
+    else if (allocation_mode_ == AllocationMode::AUTO)
+        use_buddy = isPowerOfTwo(size);
+
+    if (use_buddy)
     {
-        result = physical_allocator_->allocate({size, process_id});
-    }
-    else // AUTO mode
-    {
-        if (isPowerOfTwo(size))
-        {
-            result = buddy_allocator_->allocate({size, process_id});
-            used_buddy = true;
-            cout << "[INFO] Buddy allocator selected (power-of-two request)\n";
-        }
-        else
-        {
-            result = physical_allocator_->allocate({size, process_id});
-        }
+        cout << "[INFO] Buddy allocator selected (power-of-two request)\n";
+        auto result = buddy_allocator_->allocate({size, process_id});
+        if (result.success)
+            it->second.push_back(result.address);
+        return result;
     }
 
+    auto result = physical_allocator_->allocate({size, process_id});
     if (result.success)
-    {
         it->second.push_back(result.address);
-        cache_misses_++;
-    }
 
     return result;
 }
+
+
 
 void IntegratedMemorySystem::setAllocationMode(AllocationMode mode)
 {
@@ -224,9 +218,16 @@ bool IntegratedMemorySystem::accessMemory(ProcessId process_id, Address virtual_
 void IntegratedMemorySystem::switchAllocationStrategy(AllocationStrategy new_strategy)
 {
     alloc_strategy_ = new_strategy;
+
+    // FORCE physical allocation mode
+    allocation_mode_ = AllocationMode::FORCED;
+
     physical_allocator_ = createAllocator(new_strategy, total_memory_);
     physical_allocator_->initialize(total_memory_);
+
+    cout << "[INFO] Allocation mode set to FORCED (Physical allocator)\n";
 }
+
 bool IntegratedMemorySystem::hasProcess(ProcessId pid) const
 {
     return process_allocations_.find(pid) != process_allocations_.end();

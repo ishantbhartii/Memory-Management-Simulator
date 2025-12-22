@@ -21,6 +21,14 @@ enum class AllocationStrategy
     BEST_FIT,
     WORST_FIT
 };
+enum class AllocationMode
+{
+    AUTO,       // decide automatically (power-of-two → buddy)
+    PHYSICAL,   // always use physical allocator
+    BUDDY,
+    FORCED    // always use buddy allocator
+};
+
 
 enum class CacheReplacementPolicy
 {
@@ -50,6 +58,7 @@ struct MemoryBlock
     BlockStatus status;
     ProcessId process_id;
     BlockId block_id;
+    Size requested_size;
 
     MemoryBlock(
         Address addr = 0,

@@ -13,11 +13,7 @@
 #include "common/types.hpp"
 
 using namespace std;
-enum class AllocationMode {
-    PHYSICAL,
-    BUDDY,
-    AUTO
-};
+
 
 
 
@@ -55,6 +51,7 @@ public:
     bool hasProcess(ProcessId pid) const;
     ~IntegratedMemorySystem() = default;
     MemoryStats getPhysicalAllocatorStats() const;
+    AllocationMode getAllocationMode() const { return allocation_mode_; }
     void setAllocationMode(AllocationMode mode);
     MemoryStats getBuddyAllocatorStats() const;
     VirtualMemoryManager::VMMStats getVMMStats() const;

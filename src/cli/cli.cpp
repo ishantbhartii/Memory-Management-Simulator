@@ -52,11 +52,10 @@ void CLI::registerCommands()
     commands_["setproc"] = {"setproc", "Set current process context", bind(&CLI::handleSetProcess, this, _1)};
     commands_["help"] = {"help", "Display help information", bind(&CLI::handleHelp, this, _1)};
     commands_["quit"] = {"quit", "Exit the simulator", bind(&CLI::handleQuit, this, _1)};
-    commands_["allocator"] = {
-    "allocator",
-    "Set allocator mode: auto | buddy | physical",
-    bind(&CLI::handleAllocatorMode, this, _1)
-};
+    commands_["mode"] = {
+        "mode",
+        "Set allocation mode: auto | buddy | physical | forced",
+        bind(&CLI::handleAllocatorMode, this, _1)};
 }
 
 bool CLI::executeCommand(const string &input)
@@ -81,31 +80,35 @@ bool CLI::handleAllocatorMode(const vector<string> &args)
 {
     if (args.size() != 1)
     {
-        cout << "Usage: allocator auto | buddy | physical\n";
+        cout << "Usage: allocator auto | buddy | physical | forced\n";
         return false;
     }
 
     if (args[0] == "auto")
     {
         memory_system_.setAllocationMode(AllocationMode::AUTO);
-        cout << "Allocator set to AUTO (power-of-two → Buddy)\n";
+        cout << "[INFO] Allocation mode set to AUTO\n";
     }
     else if (args[0] == "buddy")
     {
         memory_system_.setAllocationMode(AllocationMode::BUDDY);
-        cout << "Allocator set to Buddy\n";
+        cout << "[INFO] Allocation mode set to BUDDY\n";
     }
     else if (args[0] == "physical")
     {
         memory_system_.setAllocationMode(AllocationMode::PHYSICAL);
-        cout << "Allocator set to Physical\n";
+        cout << "[INFO] Allocation mode set to PHYSICAL\n";
+    }
+    else if (args[0] == "forced")
+    {
+        memory_system_.setAllocationMode(AllocationMode::FORCED);
+        cout << "[INFO] Allocation mode set to FORCED\n";
     }
     else
     {
-        cout << "Unknown mode. Use auto | buddy | physical\n";
+        cout << "Unknown mode. Use auto | buddy | physical | forced\n";
         return false;
     }
-
     return true;
 }
 

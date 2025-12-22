@@ -16,7 +16,6 @@ private:
     size_t allocation_successes_ = 0;
     size_t allocation_failures_ = 0;
     Size internal_fragmentation_ = 0;
-
     Size total_memory_;
     int max_order_;
     vector<list<Address>> free_lists_;
