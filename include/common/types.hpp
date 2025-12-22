@@ -90,6 +90,10 @@ struct MemoryStats {
     size_t free_blocks;
     size_t allocated_blocks;
     Size largest_free_block;
+    Size internal_fragmentation;     
+    size_t allocation_requests;      
+    size_t allocation_successes;     
+    size_t allocation_failures;      
 
     MemoryStats()
         : total_memory(0),

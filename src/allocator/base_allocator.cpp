@@ -3,25 +3,29 @@
 #include <stdexcept>
 
 BaseAllocator::BaseAllocator(Size total_memory)
-    : total_memory_(total_memory), next_block_id_(0) {
-    initialize(total_memory);
+    : total_memory_(total_memory),
+      next_block_id_(0),
+      allocation_requests_(0),
+      allocation_successes_(0),
+      allocation_failures_(0),
+      internal_fragmentation_(0) {
 }
+
 
 void BaseAllocator::initialize(Size total_memory) {
     total_memory_ = total_memory;
     memory_blocks_.clear();
     next_block_id_ = 0;
 
-    MemoryBlock initial_block(
-        0,
-        total_memory,
-        BlockStatus::FREE,
-        -1,
-        next_block_id_++
-    );
+    allocation_requests_ = 0;
+    allocation_successes_ = 0;
+    allocation_failures_ = 0;
+    internal_fragmentation_ = 0;
 
+    MemoryBlock initial_block(0, total_memory, BlockStatus::FREE, -1, generateBlockId());
     memory_blocks_.push_back(initial_block);
 }
+
 
 bool BaseAllocator::deallocate(BlockId block_id) {
     auto it = findBlockById(block_id);

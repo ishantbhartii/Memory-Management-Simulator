@@ -13,6 +13,12 @@ protected:
     Size total_memory_;
     BlockId next_block_id_;
 
+    size_t allocation_requests_;
+    size_t allocation_successes_;
+    size_t allocation_failures_;
+    Size internal_fragmentation_;
+
+
 public:
     BaseAllocator(Size total_memory);
     virtual ~BaseAllocator() = default;
