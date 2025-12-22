@@ -1,4 +1,7 @@
 #  Memory Management Simulator (C++)
+![Language](https://img.shields.io/badge/language-C++17-blue)
+![Build](https://img.shields.io/badge/build-CMake%20%7C%20Make-green)
+![Type](https://img.shields.io/badge/project-OS%20Simulation-orange)
 
 **CLI-based Operating Systems memory management simulator** that models how modern OSes handle **physical memory allocation, virtual memory, and cache hierarchy**, with real-time statistics and visualization.
 
