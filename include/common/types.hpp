@@ -4,42 +4,47 @@
 #include <cstdint>
 #include <cstddef>
 
-
 using Address = uint32_t;
 using Size = uint32_t;
 using ProcessId = int;
 using BlockId = int;
 
-enum class BlockStatus {
+enum class BlockStatus
+{
     FREE,
     ALLOCATED
 };
 
-enum class AllocationStrategy {
+enum class AllocationStrategy
+{
     FIRST_FIT,
     BEST_FIT,
     WORST_FIT
 };
 
-enum class CacheReplacementPolicy {
+enum class CacheReplacementPolicy
+{
     FIFO,
     LRU,
     LFU
 };
 
-enum class PageReplacementPolicy {
+enum class PageReplacementPolicy
+{
     FIFO,
     LRU,
     CLOCK
 };
 
-enum class CacheLevel {
+enum class CacheLevel
+{
     L1,
     L2,
     L3
 };
 
-struct MemoryBlock {
+struct MemoryBlock
+{
     Address start_address;
     Size size;
     BlockStatus status;
@@ -51,20 +56,21 @@ struct MemoryBlock {
         Size sz = 0,
         BlockStatus st = BlockStatus::FREE,
         ProcessId pid = -1,
-        BlockId bid = -1
-    )
+        BlockId bid = -1)
         : start_address(addr),
           size(sz),
           status(st),
           process_id(pid),
           block_id(bid) {}
 
-    bool isFree() const {
+    bool isFree() const
+    {
         return status == BlockStatus::FREE;
     }
 };
 
-struct AllocationRequest {
+struct AllocationRequest
+{
     Size size;
     ProcessId process_id;
 
@@ -72,7 +78,8 @@ struct AllocationRequest {
         : size(sz), process_id(pid) {}
 };
 
-struct AllocationResult {
+struct AllocationResult
+{
     bool success;
     Address address;
     BlockId block_id;
@@ -81,7 +88,8 @@ struct AllocationResult {
         : success(s), address(addr), block_id(bid) {}
 };
 
-struct MemoryStats {
+struct MemoryStats
+{
     Size total_memory;
     Size used_memory;
     Size free_memory;
@@ -90,10 +98,10 @@ struct MemoryStats {
     size_t free_blocks;
     size_t allocated_blocks;
     Size largest_free_block;
-    Size internal_fragmentation;     
-    size_t allocation_requests;      
-    size_t allocation_successes;     
-    size_t allocation_failures;      
+    Size internal_fragmentation;
+    size_t allocation_requests;
+    size_t allocation_successes;
+    size_t allocation_failures;
 
     MemoryStats()
         : total_memory(0),
@@ -103,7 +111,11 @@ struct MemoryStats {
           total_blocks(0),
           free_blocks(0),
           allocated_blocks(0),
-          largest_free_block(0) {}
+          allocation_requests(0),
+          allocation_successes(0),
+          allocation_failures(0),
+          internal_fragmentation(0)
+              largest_free_block(0) {}
 };
 
 #endif

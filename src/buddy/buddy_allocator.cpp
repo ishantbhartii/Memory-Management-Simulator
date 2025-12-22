@@ -6,8 +6,10 @@
 using namespace std;
 
 BuddyAllocator::BuddyAllocator(Size total_memory)
-    : total_memory_(total_memory) {
-    if (!isPowerOfTwo(total_memory)) {
+    : total_memory_(total_memory)
+{
+    if (!isPowerOfTwo(total_memory))
+    {
         throw invalid_argument("Total memory must be a power of 2");
     }
 
@@ -15,15 +17,18 @@ BuddyAllocator::BuddyAllocator(Size total_memory)
     free_lists_.resize(max_order_ + 1);
 }
 
-void BuddyAllocator::initialize() {
+void BuddyAllocator::initialize()
+{
     free_lists_.clear();
     free_lists_.resize(max_order_ + 1);
     allocated_blocks_.clear();
     free_lists_[max_order_].push_back(0);
 }
 
-AllocationResult BuddyAllocator::allocate(const AllocationRequest& request) {
-    if (request.size == 0 || request.size > total_memory_) {
+AllocationResult BuddyAllocator::allocate(const AllocationRequest &request)
+{
+    if (request.size == 0 || request.size > total_memory_)
+    {
         return AllocationResult(false, 0, -1);
     }
 
@@ -31,15 +36,18 @@ AllocationResult BuddyAllocator::allocate(const AllocationRequest& request) {
     int required_order = getOrder(actual_size);
 
     int order = required_order;
-    while (order <= max_order_ && free_lists_[order].empty()) {
+    while (order <= max_order_ && free_lists_[order].empty())
+    {
         order++;
     }
 
-    if (order > max_order_) {
+    if (order > max_order_)
+    {
         return AllocationResult(false, 0, -1);
     }
 
-    while (order > required_order) {
+    while (order > required_order)
+    {
         splitBlock(order);
         order--;
     }
@@ -52,9 +60,11 @@ AllocationResult BuddyAllocator::allocate(const AllocationRequest& request) {
     return AllocationResult(true, address, static_cast<BlockId>(address));
 }
 
-bool BuddyAllocator::deallocate(Address address) {
+bool BuddyAllocator::deallocate(Address address)
+{
     auto it = allocated_blocks_.find(address);
-    if (it == allocated_blocks_.end()) {
+    if (it == allocated_blocks_.end())
+    {
         return false;
     }
 
@@ -64,12 +74,14 @@ bool BuddyAllocator::deallocate(Address address) {
     return true;
 }
 
-MemoryStats BuddyAllocator::getStats() const {
+MemoryStats BuddyAllocator::getStats() const
+{
     MemoryStats stats;
     stats.total_memory = total_memory_;
 
     Size used = 0;
-    for (const auto& pair : allocated_blocks_) {
+    for (const auto &pair : allocated_blocks_)
+    {
         used += getBlockSize(pair.second.first);
     }
 
@@ -77,14 +89,30 @@ MemoryStats BuddyAllocator::getStats() const {
     stats.free_memory = total_memory_ - used;
     stats.total_blocks = allocated_blocks_.size();
     stats.allocated_blocks = allocated_blocks_.size();
-    stats.fragmentation_ratio = 0.0;
+
+    Size internal_frag = 0;
+
+    for (const auto &pair : allocated_blocks_)
+    {
+        int order = pair.second.first;
+        Size block_size = getBlockSize(order);
+        internal_frag += 0;
+    }
+
+    stats.internal_fragmentation = internal_frag;
+    stats.fragmentation_ratio =
+        stats.used_memory > 0
+            ? static_cast<double>(internal_frag) / stats.used_memory
+            : 0.0;
 
     size_t free_count = 0;
     Size largest_free = 0;
 
-    for (int i = 0; i <= max_order_; ++i) {
+    for (int i = 0; i <= max_order_; ++i)
+    {
         free_count += free_lists_[i].size();
-        if (!free_lists_[i].empty()) {
+        if (!free_lists_[i].empty())
+        {
             largest_free = max(largest_free, getBlockSize(i));
         }
     }
@@ -95,10 +123,12 @@ MemoryStats BuddyAllocator::getStats() const {
     return stats;
 }
 
-vector<MemoryBlock> BuddyAllocator::getAllocatedBlocks() const {
+vector<MemoryBlock> BuddyAllocator::getAllocatedBlocks() const
+{
     vector<MemoryBlock> blocks;
 
-    for (const auto& pair : allocated_blocks_) {
+    for (const auto &pair : allocated_blocks_)
+    {
         Address addr = pair.first;
         int order = pair.second.first;
         ProcessId pid = pair.second.second;
@@ -108,19 +138,21 @@ vector<MemoryBlock> BuddyAllocator::getAllocatedBlocks() const {
             getBlockSize(order),
             BlockStatus::ALLOCATED,
             pid,
-            static_cast<BlockId>(addr)
-        );
+            static_cast<BlockId>(addr));
     }
 
     return blocks;
 }
 
-vector<MemoryBlock> BuddyAllocator::getFreeBlocks() const {
+vector<MemoryBlock> BuddyAllocator::getFreeBlocks() const
+{
     vector<MemoryBlock> blocks;
 
-    for (int order = 0; order <= max_order_; ++order) {
+    for (int order = 0; order <= max_order_; ++order)
+    {
         Size size = getBlockSize(order);
-        for (Address addr : free_lists_[order]) {
+        for (Address addr : free_lists_[order])
+        {
             blocks.emplace_back(addr, size, BlockStatus::FREE, -1, static_cast<BlockId>(addr));
         }
     }
@@ -128,16 +160,20 @@ vector<MemoryBlock> BuddyAllocator::getFreeBlocks() const {
     return blocks;
 }
 
-int BuddyAllocator::getOrder(Size size) const {
+int BuddyAllocator::getOrder(Size size) const
+{
     return log2Floor(nextPowerOfTwo(size));
 }
 
-Address BuddyAllocator::getBuddyAddress(Address address, int order) const {
+Address BuddyAllocator::getBuddyAddress(Address address, int order) const
+{
     return address ^ getBlockSize(order);
 }
 
-void BuddyAllocator::splitBlock(int order) {
-    if (order == 0 || free_lists_[order].empty()) return;
+void BuddyAllocator::splitBlock(int order)
+{
+    if (order == 0 || free_lists_[order].empty())
+        return;
 
     Address address = free_lists_[order].front();
     free_lists_[order].pop_front();
@@ -149,29 +185,36 @@ void BuddyAllocator::splitBlock(int order) {
     free_lists_[lower].push_back(address + half);
 }
 
-void BuddyAllocator::mergeBuddies(int order, Address address) {
-    if (order == max_order_) {
+void BuddyAllocator::mergeBuddies(int order, Address address)
+{
+    if (order == max_order_)
+    {
         free_lists_[order].push_back(address);
         return;
     }
 
     Address buddy = getBuddyAddress(address, order);
-    auto& list = free_lists_[order];
+    auto &list = free_lists_[order];
 
     auto it = find(list.begin(), list.end(), buddy);
-    if (it != list.end()) {
+    if (it != list.end())
+    {
         list.erase(it);
         mergeBuddies(order + 1, min(address, buddy));
-    } else {
+    }
+    else
+    {
         list.push_back(address);
     }
 }
 
-bool BuddyAllocator::isValidAddress(Address address, int order) const {
+bool BuddyAllocator::isValidAddress(Address address, int order) const
+{
     Size size = getBlockSize(order);
     return address % size == 0 && address + size <= total_memory_;
 }
 
-Size BuddyAllocator::getBlockSize(int order) const {
+Size BuddyAllocator::getBlockSize(int order) const
+{
     return static_cast<Size>(1) << order;
 }
