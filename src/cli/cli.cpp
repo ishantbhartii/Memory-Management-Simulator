@@ -98,15 +98,24 @@ bool CLI::handleInit(const vector<string>& args) {
 }
 
 bool CLI::handleCreateProcess(const vector<string>& args) {
-    if (args.size() != 1) return false;
+    if (!memory_system_.isInitialized()) {
+        cout << "Error: system not initialized. Run 'init' first." << endl;
+        return false;
+    }
 
+    if (args.size() != 1) return false;
     ProcessId pid = parseProcessId(args[0]);
     if (pid < 0) return false;
 
     return memory_system_.createProcess(pid);
 }
 
+
 bool CLI::handleTerminateProcess(const vector<string>& args) {
+    if (!memory_system_.isInitialized()) {
+    cout << "Error: system not initialized. Run 'init' first." << endl;
+    return false;
+}
     if (args.size() != 1) return false;
 
     ProcessId pid = parseProcessId(args[0]);
@@ -132,7 +141,6 @@ bool CLI::handleAllocate(const vector<string>& args) {
 }
 
     if (args.size() == 1) {
-        if (pid < 0) return false;
         size = parseSize(args[0]);
     } else if (args.size() == 2) {
         pid = parseProcessId(args[0]);
@@ -157,6 +165,11 @@ bool CLI::handleDeallocate(const vector<string>& args) {
 }
 
 bool CLI::handleAccess(const vector<string>& args) {
+    if (!memory_system_.isInitialized()) {
+    cout << "Error: system not initialized. Run 'init' first." << endl;
+    return false;
+}
+
     ProcessId pid = current_process_;
     Address addr = 0;
     bool is_write = false;
@@ -179,11 +192,21 @@ bool CLI::handleAccess(const vector<string>& args) {
 }
 
 bool CLI::handleDump(const vector<string>& args) {
+    if (!memory_system_.isInitialized()) {
+    cout << "Error: system not initialized. Run 'init' first." << endl;
+    return false;
+}
+
     memory_system_.printMemoryDump();
     return true;
 }
 
 bool CLI::handleStats(const vector<string>& args) {
+    if (!memory_system_.isInitialized()) {
+    cout << "Error: system not initialized. Run 'init' first." << endl;
+    return false;
+}
+
     memory_system_.printStatistics();
     return true;
 }
@@ -231,6 +254,10 @@ bool CLI::handleProcessInfo(const vector<string>& args) {
 }
 
 bool CLI::handleSetProcess(const vector<string>& args) {
+    if (!memory_system_.isInitialized()) {
+    cout << "Error: system not initialized. Run 'init' first." << endl;
+    return false;
+}
     if (args.size() != 1) return false;
 
     current_process_ = parseProcessId(args[0]);

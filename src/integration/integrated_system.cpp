@@ -26,13 +26,13 @@ IntegratedMemorySystem::IntegratedMemorySystem(
 {
 }
 
-
 bool IntegratedMemorySystem::initialize()
 {
-    if (initialized_) {
-        cout << "System already initialized" << endl;
-        return true;
+    if (initialized_)
+    {
+        return true; // already initialized, do nothing
     }
+
     try
     {
         physical_allocator_ = createAllocator(alloc_strategy_, total_memory_);
@@ -55,15 +55,14 @@ bool IntegratedMemorySystem::initialize()
             CacheReplacementPolicy::LRU);
 
         virtual_memory_manager_ = make_unique<VirtualMemoryManager>(
-            total_memory_,
-            page_size_,
-            page_replacement_policy_);
-        initialized_=true;
+            total_memory_, page_size_, page_replacement_policy_);
+
+        initialized_ = true;
         return true;
     }
-    catch (const exception &e)
+    catch (...)
     {
-        cerr << "Failed to initialize integrated system: " << e.what() << endl;
+        initialized_ = false;
         return false;
     }
 }
@@ -109,6 +108,11 @@ bool IntegratedMemorySystem::terminateProcess(ProcessId process_id)
 
 AllocationResult IntegratedMemorySystem::allocateMemory(ProcessId process_id, Size size)
 {
+    if (!initialized_)
+    {
+        return AllocationResult(false, 0, -1);
+    }
+
     total_operations_++;
 
     auto it = process_allocations_.find(process_id);
@@ -140,6 +144,11 @@ AllocationResult IntegratedMemorySystem::allocateMemory(ProcessId process_id, Si
 
 bool IntegratedMemorySystem::deallocateMemory(ProcessId process_id, Address address)
 {
+    if (!initialized_)
+    {
+        return false;
+    }
+
     total_operations_++;
 
     auto it = process_allocations_.find(process_id);
@@ -163,6 +172,11 @@ bool IntegratedMemorySystem::deallocateMemory(ProcessId process_id, Address addr
 
 bool IntegratedMemorySystem::accessMemory(ProcessId process_id, Address virtual_address, bool is_write)
 {
+    if (!initialized_)
+    {
+        return false;
+    }
+
     total_operations_++;
 
     if (!virtual_memory_manager_->accessMemory(process_id, virtual_address, is_write))
@@ -258,7 +272,6 @@ void IntegratedMemorySystem::printStatistics() const
              << endl;
     }
 }
-
 
 void IntegratedMemorySystem::printProcessInfo(ProcessId process_id) const
 {

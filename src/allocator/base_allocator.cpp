@@ -5,12 +5,10 @@
 
 BaseAllocator::BaseAllocator(Size total_memory)
     : total_memory_(total_memory),
-      next_block_id_(0),
-      allocation_requests_(0),
-      allocation_successes_(0),
-      allocation_failures_(0),
-      internal_fragmentation_(0) {
+      next_block_id_(0) {
+    stats_.total_memory = total_memory;
 }
+
 
 
 void BaseAllocator::initialize(Size total_memory) {

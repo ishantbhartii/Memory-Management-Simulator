@@ -12,7 +12,7 @@ protected:
     vector<MemoryBlock> memory_blocks_;
     Size total_memory_;
     BlockId next_block_id_;
-
+    MemoryStats stats_;
     size_t allocation_requests_;
     size_t allocation_successes_;
     size_t allocation_failures_;
