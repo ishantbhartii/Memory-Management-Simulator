@@ -1,0 +1,18 @@
+# Build artifacts
+/build/
+/obj/
+/*.o
+/*.out
+/memsim
+
+# Editor/OS files
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Test outputs
+results/
+docs/screenshots/
