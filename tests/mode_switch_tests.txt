@@ -1,0 +1,18 @@
+color off
+init
+create 5
+setproc 5
+
+mode auto
+alloc 64     
+alloc 100    
+
+mode buddy
+alloc 128
+
+mode physical
+alloc 256
+
+stats
+
+quit

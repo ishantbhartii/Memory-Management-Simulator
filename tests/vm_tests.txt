@@ -1,0 +1,13 @@
+color off
+init
+create 4
+setproc 4
+access 0
+access 4096
+access 8192
+access 12288
+stats
+access 0
+access 4096
+stats
+quit

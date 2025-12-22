@@ -1,0 +1,17 @@
+color off
+init
+create 3
+setproc 3
+
+alloc 4096
+
+
+access 0
+
+access 0
+access 0
+access 0
+
+stats
+
+quit

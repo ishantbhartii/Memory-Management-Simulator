@@ -1,0 +1,20 @@
+color off
+
+init
+create 2
+setproc 2
+
+
+alloc 64
+
+
+alloc 100
+
+
+stats
+
+free 2 0
+free 2 64
+
+stats
+quit
