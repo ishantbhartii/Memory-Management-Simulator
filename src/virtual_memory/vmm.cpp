@@ -118,17 +118,9 @@ bool VirtualMemoryManager::handlePageFault(ProcessId process_id, Address virtual
 }
 void VirtualMemoryManager::invalidatePageUsingFrame(size_t frame)
 {
-    for (auto &proc : process_tables_)
+    for (auto &process_pair : process_tables_)
     {
-        for (auto &entry : proc.second->getEntries())
-        {
-            if (entry.second.present &&
-                entry.second.frame_number == frame)
-            {
-                entry.second.present = false;
-                return;
-            }
-        }
+        process_pair.second->invalidateFrame(frame);
     }
 }
 

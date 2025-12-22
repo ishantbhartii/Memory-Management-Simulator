@@ -70,6 +70,18 @@ size_t PageTable::getPresentPages() const {
     }
     return count;
 }
+void PageTable::invalidateFrame(size_t frame_number)
+{
+    for (auto& pair : entries_) {
+        auto& entry = pair.second;
+        if (entry.present && entry.frame_number == frame_number) {
+            entry.present = false;
+            entry.referenced = false;
+            entry.modified = false;
+        }
+    }
+}
+
 
 size_t PageTable::getModifiedPages() const {
     size_t count = 0;

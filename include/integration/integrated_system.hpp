@@ -13,6 +13,13 @@
 #include "common/types.hpp"
 
 using namespace std;
+enum class AllocationMode {
+    PHYSICAL,
+    BUDDY,
+    AUTO
+};
+
+
 
 class IntegratedMemorySystem
 {
@@ -21,6 +28,8 @@ private:
     unique_ptr<BuddyAllocator> buddy_allocator_;
     unique_ptr<CacheHierarchy> cache_hierarchy_;
     unique_ptr<VirtualMemoryManager> virtual_memory_manager_;
+    AllocationMode allocation_mode_;
+
 
     Size total_memory_;
     Size page_size_;
@@ -46,6 +55,7 @@ public:
     bool hasProcess(ProcessId pid) const;
     ~IntegratedMemorySystem() = default;
     MemoryStats getPhysicalAllocatorStats() const;
+    void setAllocationMode(AllocationMode mode);
     MemoryStats getBuddyAllocatorStats() const;
     VirtualMemoryManager::VMMStats getVMMStats() const;
 

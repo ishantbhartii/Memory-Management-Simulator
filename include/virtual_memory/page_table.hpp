@@ -32,6 +32,7 @@ private:
 
 public:
     PageTable(ProcessId process_id, Size page_size);
+    void invalidateFrame(size_t frame_number);
 
     bool addMapping(Address virtual_page, Address physical_frame);
     bool removeMapping(Address virtual_page);

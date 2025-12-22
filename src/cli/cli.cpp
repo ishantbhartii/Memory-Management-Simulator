@@ -52,6 +52,11 @@ void CLI::registerCommands()
     commands_["setproc"] = {"setproc", "Set current process context", bind(&CLI::handleSetProcess, this, _1)};
     commands_["help"] = {"help", "Display help information", bind(&CLI::handleHelp, this, _1)};
     commands_["quit"] = {"quit", "Exit the simulator", bind(&CLI::handleQuit, this, _1)};
+    commands_["allocator"] = {
+    "allocator",
+    "Set allocator mode: auto | buddy | physical",
+    bind(&CLI::handleAllocatorMode, this, _1)
+};
 }
 
 bool CLI::executeCommand(const string &input)
@@ -71,6 +76,37 @@ bool CLI::executeCommand(const string &input)
 
     cout << "Unknown command: " << cmd << endl;
     return false;
+}
+bool CLI::handleAllocatorMode(const vector<string> &args)
+{
+    if (args.size() != 1)
+    {
+        cout << "Usage: allocator auto | buddy | physical\n";
+        return false;
+    }
+
+    if (args[0] == "auto")
+    {
+        memory_system_.setAllocationMode(AllocationMode::AUTO);
+        cout << "Allocator set to AUTO (power-of-two → Buddy)\n";
+    }
+    else if (args[0] == "buddy")
+    {
+        memory_system_.setAllocationMode(AllocationMode::BUDDY);
+        cout << "Allocator set to Buddy\n";
+    }
+    else if (args[0] == "physical")
+    {
+        memory_system_.setAllocationMode(AllocationMode::PHYSICAL);
+        cout << "Allocator set to Physical\n";
+    }
+    else
+    {
+        cout << "Unknown mode. Use auto | buddy | physical\n";
+        return false;
+    }
+
+    return true;
 }
 
 vector<string> CLI::parseInput(const string &input)

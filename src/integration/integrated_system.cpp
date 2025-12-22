@@ -18,6 +18,7 @@ IntegratedMemorySystem::IntegratedMemorySystem(
       page_size_(page_size),
       alloc_strategy_(alloc_strategy),
       page_replacement_policy_(page_policy),
+      allocation_mode_(AllocationMode::AUTO),
       initialized_(false),
       total_operations_(0),
       cache_hits_(0),
@@ -108,19 +109,40 @@ bool IntegratedMemorySystem::terminateProcess(ProcessId process_id)
 AllocationResult IntegratedMemorySystem::allocateMemory(ProcessId process_id, Size size)
 {
     if (!initialized_)
-    {
         return AllocationResult(false, 0, -1);
-    }
 
     total_operations_++;
 
     auto it = process_allocations_.find(process_id);
     if (it == process_allocations_.end())
-    {
         return AllocationResult(false, 0, -1);
+
+    AllocationResult result(false, 0, -1);
+    bool used_buddy = false;
+
+    if (allocation_mode_ == AllocationMode::BUDDY)
+    {
+        result = buddy_allocator_->allocate({size, process_id});
+        used_buddy = true;
+    }
+    else if (allocation_mode_ == AllocationMode::PHYSICAL)
+    {
+        result = physical_allocator_->allocate({size, process_id});
+    }
+    else // AUTO mode
+    {
+        if (isPowerOfTwo(size))
+        {
+            result = buddy_allocator_->allocate({size, process_id});
+            used_buddy = true;
+            cout << "[INFO] Buddy allocator selected (power-of-two request)\n";
+        }
+        else
+        {
+            result = physical_allocator_->allocate({size, process_id});
+        }
     }
 
-    AllocationResult result = physical_allocator_->allocate({size, process_id});
     if (result.success)
     {
         it->second.push_back(result.address);
@@ -128,6 +150,11 @@ AllocationResult IntegratedMemorySystem::allocateMemory(ProcessId process_id, Si
     }
 
     return result;
+}
+
+void IntegratedMemorySystem::setAllocationMode(AllocationMode mode)
+{
+    allocation_mode_ = mode;
 }
 
 bool IntegratedMemorySystem::deallocateMemory(ProcessId process_id, Address address)
@@ -228,16 +255,16 @@ Address IntegratedMemorySystem::translateVirtualToPhysical(
 {
     auto page_table = virtual_memory_manager_->getPageTable(process_id);
     if (!page_table)
-        return static_cast<Address>(-1);
+        return 0;
 
     Address virtual_page = virtual_address / page_size_;
     Address offset = virtual_address % page_size_;
 
     const auto &entries = page_table->getEntries();
-
     auto it = entries.find(virtual_page);
+
     if (it == entries.end() || !it->second.present)
-        return static_cast<Address>(-1);
+        return 0;
 
     return it->second.frame_number * page_size_ + offset;
 }
@@ -284,6 +311,17 @@ void IntegratedMemorySystem::printStatistics() const
              << formatSize(phys_stats.free_memory) << " free"
              << endl;
     }
+    if (cache_hierarchy_)
+    {
+        auto cacheStats = cache_hierarchy_->getStats();
+
+        cout << "\n[Cache Hierarchy]\n";
+        cout << "Total accesses: " << cacheStats.total_accesses << endl;
+        cout << "Main memory accesses: " << cacheStats.main_memory_accesses << endl;
+        cout << "Average access time: "
+             << cacheStats.avg_memory_access_time << endl;
+    }
+
     auto vm = virtual_memory_manager_.get();
 
     cout << "Virtual Memory:" << endl;

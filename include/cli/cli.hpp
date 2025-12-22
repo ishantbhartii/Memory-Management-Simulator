@@ -21,6 +21,8 @@ private:
     unordered_map<string, Command> commands_;
     bool running_;
     ProcessId current_process_;
+    bool handleAllocatorMode(const vector<string> &args);
+
 
 public:
     CLI(IntegratedMemorySystem& system);
