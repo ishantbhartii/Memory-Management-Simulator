@@ -1,0 +1,91 @@
+=== Memory Management Simulator CLI ===
+Type 'help' for available commands or 'quit' to exit.
+[36mmemsim[NO-PROC | AUTO | LRU]> [0mColor output disabled
+memsim[NO-PROC | AUTO | LRU]> memsim[NO-PROC | AUTO | LRU]> Memory system initialized successfully
+Total memory: 1.00 MB
+Page size: 4.00 KB
+memsim[NO-PROC | AUTO | LRU]> memsim[NO-PROC | AUTO | LRU]> memsim[P2 | AUTO | LRU]> memsim[P2 | AUTO | LRU]> memsim[P2 | AUTO | LRU]> [INFO] Buddy allocator selected (power-of-two request)
+memsim[P2 | AUTO | LRU]> memsim[P2 | AUTO | LRU]> memsim[P2 | AUTO | LRU]> memsim[P2 | AUTO | LRU]> memsim[P2 | AUTO | LRU]> memsim[P2 | AUTO | LRU]> 
+================ SYSTEM STATISTICS ================
+
+Total Operations        : 2
+
+[Physical Allocator]
+  Used Memory           : 100.00 B
+  Free Memory           : 1023.90 KB
+  External Fragmentation: 0 %
+  Requests              : 1
+  Success / Failure     : 1 / 0
+  Utilization           : 0.00953674 %
+
+[Buddy Allocator]
+  Used Memory           : 64.00 B
+  Free Memory           : 511.94 KB
+  Internal Fragmentation: 0.00 B
+  Requests              : 1
+  Success / Failure     : 1 / 0
+  Utilization           : 0.012207 %
+
+[Virtual Memory]
+  Page Faults           : 0
+  Page Replacements     : 0
+  Page Fault Rate       : 0 %
+  Free Frames           : 256 / 256
+
+[CACHE HIERARCHY]
+  L1 Cache
+    Hits / Misses       : 0 / 0
+    Hit Ratio           : 0 %
+  L2 Cache
+    Hits / Misses       : 0 / 0
+    Hit Ratio           : 0 %
+  L3 Cache
+    Hits / Misses       : 0 / 0
+    Hit Ratio           : 0 %
+  Main Memory Accesses  : 0
+  AMAT                  : 0 cycles
+
+==================================================
+memsim[P2 | AUTO | LRU]> memsim[P2 | AUTO | LRU]> memsim[P2 | AUTO | LRU]> Free failed: invalid address or permission denied
+memsim[P2 | AUTO | LRU]> memsim[P2 | AUTO | LRU]> 
+================ SYSTEM STATISTICS ================
+
+Total Operations        : 2
+
+[Physical Allocator]
+  Used Memory           : 100.00 B
+  Free Memory           : 1023.90 KB
+  External Fragmentation: 0 %
+  Requests              : 1
+  Success / Failure     : 1 / 0
+  Utilization           : 0.00953674 %
+
+[Buddy Allocator]
+  Used Memory           : 0.00 B
+  Free Memory           : 512.00 KB
+  Internal Fragmentation: 0.00 B
+  Requests              : 1
+  Success / Failure     : 1 / 0
+  Utilization           : 0 %
+
+[Virtual Memory]
+  Page Faults           : 0
+  Page Replacements     : 0
+  Page Fault Rate       : 0 %
+  Free Frames           : 256 / 256
+
+[CACHE HIERARCHY]
+  L1 Cache
+    Hits / Misses       : 0 / 0
+    Hit Ratio           : 0 %
+  L2 Cache
+    Hits / Misses       : 0 / 0
+    Hit Ratio           : 0 %
+  L3 Cache
+    Hits / Misses       : 0 / 0
+    Hit Ratio           : 0 %
+  Main Memory Accesses  : 0
+  AMAT                  : 0 cycles
+
+==================================================
+memsim[P2 | AUTO | LRU]> 

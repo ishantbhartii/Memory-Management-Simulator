@@ -1,0 +1,53 @@
+=== Memory Management Simulator CLI ===
+Type 'help' for available commands or 'quit' to exit.
+[36mmemsim[NO-PROC | AUTO | LRU]> [0mColor output disabled
+memsim[NO-PROC | AUTO | LRU]> Memory system initialized successfully
+Total memory: 1.00 MB
+Page size: 4.00 KB
+memsim[NO-PROC | AUTO | LRU]> memsim[NO-PROC | AUTO | LRU]> memsim[P5 | AUTO | LRU]> memsim[P5 | AUTO | LRU]> [INFO] Allocation mode set to AUTO
+memsim[P5 | AUTO | LRU]> [INFO] Buddy allocator selected (power-of-two request)
+memsim[P5 | AUTO | LRU]> memsim[P5 | AUTO | LRU]> memsim[P5 | AUTO | LRU]> [INFO] Allocation mode set to BUDDY
+memsim[P5 | BUDDY | LRU]> [INFO] Buddy allocator selected (power-of-two request)
+memsim[P5 | BUDDY | LRU]> memsim[P5 | BUDDY | LRU]> [INFO] Allocation mode set to PHYSICAL
+memsim[P5 | PHYSICAL | LRU]> memsim[P5 | PHYSICAL | LRU]> memsim[P5 | PHYSICAL | LRU]> 
+================ SYSTEM STATISTICS ================
+
+Total Operations        : 4
+
+[Physical Allocator]
+  Used Memory           : 100.00 B
+  Free Memory           : 1023.90 KB
+  External Fragmentation: 0.0244164 %
+  Requests              : 2
+  Success / Failure     : 2 / 0
+  Utilization           : 0.00953674 %
+
+[Buddy Allocator]
+  Used Memory           : 192.00 B
+  Free Memory           : 511.81 KB
+  Internal Fragmentation: 0.00 B
+  Requests              : 2
+  Success / Failure     : 2 / 0
+  Utilization           : 0.0366211 %
+
+[Virtual Memory]
+  Page Faults           : 0
+  Page Replacements     : 0
+  Page Fault Rate       : 0 %
+  Free Frames           : 256 / 256
+
+[CACHE HIERARCHY]
+  L1 Cache
+    Hits / Misses       : 0 / 0
+    Hit Ratio           : 0 %
+  L2 Cache
+    Hits / Misses       : 0 / 0
+    Hit Ratio           : 0 %
+  L3 Cache
+    Hits / Misses       : 0 / 0
+    Hit Ratio           : 0 %
+  Main Memory Accesses  : 0
+  AMAT                  : 0 cycles
+
+==================================================
+memsim[P5 | PHYSICAL | LRU]> memsim[P5 | PHYSICAL | LRU]> 

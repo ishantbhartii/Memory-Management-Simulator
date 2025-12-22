@@ -13,6 +13,4 @@
 .DS_Store
 Thumbs.db
 
-# Test outputs
-results/
-docs/screenshots/
+

@@ -1,0 +1,49 @@
+=== Memory Management Simulator CLI ===
+Type 'help' for available commands or 'quit' to exit.
+[36mmemsim[NO-PROC | AUTO | LRU]> [0mColor output disabled
+memsim[NO-PROC | AUTO | LRU]> Memory system initialized successfully
+Total memory: 1.00 MB
+Page size: 4.00 KB
+memsim[NO-PROC | AUTO | LRU]> memsim[NO-PROC | AUTO | LRU]> memsim[P3 | AUTO | LRU]> memsim[P3 | AUTO | LRU]> [INFO] Buddy allocator selected (power-of-two request)
+memsim[P3 | AUTO | LRU]> memsim[P3 | AUTO | LRU]> memsim[P3 | AUTO | LRU]> memsim[P3 | AUTO | LRU]> memsim[P3 | AUTO | LRU]> memsim[P3 | AUTO | LRU]> memsim[P3 | AUTO | LRU]> memsim[P3 | AUTO | LRU]> memsim[P3 | AUTO | LRU]> 
+================ SYSTEM STATISTICS ================
+
+Total Operations        : 1
+
+[Physical Allocator]
+  Used Memory           : 0.00 B
+  Free Memory           : 1.00 MB
+  External Fragmentation: 0 %
+  Requests              : 0
+  Success / Failure     : 0 / 0
+  Utilization           : 0 %
+
+[Buddy Allocator]
+  Used Memory           : 4.00 KB
+  Free Memory           : 508.00 KB
+  Internal Fragmentation: 0.00 B
+  Requests              : 1
+  Success / Failure     : 1 / 0
+  Utilization           : 0.78125 %
+
+[Virtual Memory]
+  Page Faults           : 1
+  Page Replacements     : 0
+  Page Fault Rate       : 25 %
+  Free Frames           : 255 / 256
+
+[CACHE HIERARCHY]
+  L1 Cache
+    Hits / Misses       : 4 / 1
+    Hit Ratio           : 80 %
+  L2 Cache
+    Hits / Misses       : 1 / 1
+    Hit Ratio           : 50 %
+  L3 Cache
+    Hits / Misses       : 1 / 1
+    Hit Ratio           : 50 %
+  Main Memory Accesses  : 1
+  AMAT                  : 66 cycles
+
+==================================================
+memsim[P3 | AUTO | LRU]> memsim[P3 | AUTO | LRU]> 

@@ -1,0 +1,131 @@
+=== Memory Management Simulator CLI ===
+Type 'help' for available commands or 'quit' to exit.
+[36mmemsim[NO-PROC | AUTO | LRU]> [0mColor output disabled
+memsim[NO-PROC | AUTO | LRU]> Memory system initialized successfully
+Total memory: 1.00 MB
+Page size: 4.00 KB
+memsim[NO-PROC | AUTO | LRU]> memsim[NO-PROC | AUTO | LRU]> memsim[P1 | AUTO | LRU]> memsim[P1 | AUTO | LRU]> memsim[P1 | AUTO | LRU]> memsim[P1 | AUTO | LRU]> memsim[P1 | AUTO | LRU]> memsim[P1 | AUTO | LRU]> memsim[P1 | AUTO | LRU]> 
+================ SYSTEM STATISTICS ================
+
+Total Operations        : 3
+
+[Physical Allocator]
+  Used Memory           : 400.00 B
+  Free Memory           : 1023.61 KB
+  External Fragmentation: 0.0190808 %
+  Requests              : 3
+  Success / Failure     : 3 / 0
+  Utilization           : 0.038147 %
+
+[Buddy Allocator]
+  Used Memory           : 0.00 B
+  Free Memory           : 512.00 KB
+  Internal Fragmentation: 0.00 B
+  Requests              : 0
+  Success / Failure     : 0 / 0
+  Utilization           : 0 %
+
+[Virtual Memory]
+  Page Faults           : 0
+  Page Replacements     : 0
+  Page Fault Rate       : 0 %
+  Free Frames           : 256 / 256
+
+[CACHE HIERARCHY]
+  L1 Cache
+    Hits / Misses       : 0 / 0
+    Hit Ratio           : 0 %
+  L2 Cache
+    Hits / Misses       : 0 / 0
+    Hit Ratio           : 0 %
+  L3 Cache
+    Hits / Misses       : 0 / 0
+    Hit Ratio           : 0 %
+  Main Memory Accesses  : 0
+  AMAT                  : 0 cycles
+
+==================================================
+memsim[P1 | AUTO | LRU]> memsim[P1 | AUTO | LRU]> Free failed: invalid address or permission denied
+memsim[P1 | AUTO | LRU]> memsim[P1 | AUTO | LRU]> memsim[P1 | AUTO | LRU]> 
+================ SYSTEM STATISTICS ================
+
+Total Operations        : 3
+
+[Physical Allocator]
+  Used Memory           : 400.00 B
+  Free Memory           : 1023.61 KB
+  External Fragmentation: 0.0190808 %
+  Requests              : 3
+  Success / Failure     : 3 / 0
+  Utilization           : 0.038147 %
+
+[Buddy Allocator]
+  Used Memory           : 0.00 B
+  Free Memory           : 512.00 KB
+  Internal Fragmentation: 0.00 B
+  Requests              : 0
+  Success / Failure     : 0 / 0
+  Utilization           : 0 %
+
+[Virtual Memory]
+  Page Faults           : 0
+  Page Replacements     : 0
+  Page Fault Rate       : 0 %
+  Free Frames           : 256 / 256
+
+[CACHE HIERARCHY]
+  L1 Cache
+    Hits / Misses       : 0 / 0
+    Hit Ratio           : 0 %
+  L2 Cache
+    Hits / Misses       : 0 / 0
+    Hit Ratio           : 0 %
+  L3 Cache
+    Hits / Misses       : 0 / 0
+    Hit Ratio           : 0 %
+  Main Memory Accesses  : 0
+  AMAT                  : 0 cycles
+
+==================================================
+memsim[P1 | AUTO | LRU]> memsim[P1 | AUTO | LRU]> memsim[P1 | AUTO | LRU]> memsim[P1 | AUTO | LRU]> 
+================ SYSTEM STATISTICS ================
+
+Total Operations        : 3
+
+[Physical Allocator]
+  Used Memory           : 0.00 B
+  Free Memory           : 1.00 MB
+  External Fragmentation: 0 %
+  Requests              : 3
+  Success / Failure     : 3 / 0
+  Utilization           : 0 %
+
+[Buddy Allocator]
+  Used Memory           : 0.00 B
+  Free Memory           : 512.00 KB
+  Internal Fragmentation: 0.00 B
+  Requests              : 0
+  Success / Failure     : 0 / 0
+  Utilization           : 0 %
+
+[Virtual Memory]
+  Page Faults           : 0
+  Page Replacements     : 0
+  Page Fault Rate       : 0 %
+  Free Frames           : 256 / 256
+
+[CACHE HIERARCHY]
+  L1 Cache
+    Hits / Misses       : 0 / 0
+    Hit Ratio           : 0 %
+  L2 Cache
+    Hits / Misses       : 0 / 0
+    Hit Ratio           : 0 %
+  L3 Cache
+    Hits / Misses       : 0 / 0
+    Hit Ratio           : 0 %
+  Main Memory Accesses  : 0
+  AMAT                  : 0 cycles
+
+==================================================
+memsim[P1 | AUTO | LRU]> 
