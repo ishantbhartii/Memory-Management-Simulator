@@ -63,6 +63,11 @@ MemoryStats BaseAllocator::getStats() const {
     stats.free_memory = total_memory_ - used;
     stats.largest_free_block = largest_free;
     stats.fragmentation_ratio = 0.0;
+    stats.allocation_requests = allocation_requests_;
+    stats.allocation_successes = allocation_successes_;
+    stats.allocation_failures = allocation_failures_;
+    stats.internal_fragmentation = internal_fragmentation_;
+
 
     return stats;
 }
