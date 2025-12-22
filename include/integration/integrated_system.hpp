@@ -42,6 +42,8 @@ public:
         AllocationStrategy alloc_strategy = AllocationStrategy::FIRST_FIT,
         PageReplacementPolicy page_policy = PageReplacementPolicy::LRU);
 
+    size_t getTotalOperations() const { return total_operations_; }
+    bool hasProcess(ProcessId pid) const;
     ~IntegratedMemorySystem() = default;
     MemoryStats getPhysicalAllocatorStats() const;
     MemoryStats getBuddyAllocatorStats() const;

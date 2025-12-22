@@ -28,11 +28,6 @@ IntegratedMemorySystem::IntegratedMemorySystem(
 
 bool IntegratedMemorySystem::initialize()
 {
-    if (initialized_)
-    {
-        return true; // already initialized, do nothing
-    }
-
     try
     {
         physical_allocator_ = createAllocator(alloc_strategy_, total_memory_);
@@ -41,7 +36,7 @@ bool IntegratedMemorySystem::initialize()
         Size buddy_memory = total_memory_ / 2;
         if (!isPowerOfTwo(buddy_memory))
         {
-            buddy_memory = nextPowerOfTwo(buddy_memory / 2);
+            buddy_memory = nextPowerOfTwo(buddy_memory);
         }
 
         buddy_allocator_ = make_unique<BuddyAllocator>(buddy_memory);
@@ -55,17 +50,22 @@ bool IntegratedMemorySystem::initialize()
             CacheReplacementPolicy::LRU);
 
         virtual_memory_manager_ = make_unique<VirtualMemoryManager>(
-            total_memory_, page_size_, page_replacement_policy_);
+            total_memory_,
+            page_size_,
+            page_replacement_policy_);
 
         initialized_ = true;
         return true;
     }
-    catch (...)
+    catch (const exception &e)
     {
+        cerr << "Failed to initialize integrated system: "
+             << e.what() << endl;
         initialized_ = false;
         return false;
     }
 }
+
 
 unique_ptr<BaseAllocator>
 IntegratedMemorySystem::createAllocator(AllocationStrategy strategy, Size memory_size)
@@ -204,6 +204,11 @@ void IntegratedMemorySystem::switchAllocationStrategy(AllocationStrategy new_str
     physical_allocator_ = createAllocator(new_strategy, total_memory_);
     physical_allocator_->initialize(total_memory_);
 }
+bool IntegratedMemorySystem::hasProcess(ProcessId pid) const
+{
+    return process_allocations_.find(pid) != process_allocations_.end();
+}
+
 
 void IntegratedMemorySystem::switchPageReplacementPolicy(PageReplacementPolicy new_policy)
 {
