@@ -1,9 +1,11 @@
 #include "cli/cli.hpp"
 #include "common/utils.hpp"
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <algorithm>
 #include <functional>
+#include "common/colors.hpp"
 
 using namespace std;
 
@@ -49,6 +51,11 @@ void CLI::registerCommands()
     commands_["test"] = {"test", "Run memory test", bind(&CLI::handleTest, this, _1)};
     commands_["bench"] = {"bench", "Run benchmarks", bind(&CLI::handleBenchmark, this, _1)};
     commands_["process"] = {"process", "Display process information", bind(&CLI::handleProcessInfo, this, _1)};
+    commands_["color"] = {
+        "color",
+        "Toggle colored output: on | off",
+        bind(&CLI::handleColor, this, _1)};
+
     commands_["setproc"] = {"setproc", "Set current process context", bind(&CLI::handleSetProcess, this, _1)};
     commands_["help"] = {"help", "Display help information", bind(&CLI::handleHelp, this, _1)};
     commands_["quit"] = {"quit", "Exit the simulator", bind(&CLI::handleQuit, this, _1)};
@@ -76,6 +83,33 @@ bool CLI::executeCommand(const string &input)
     cout << "Unknown command: " << cmd << endl;
     return false;
 }
+bool CLI::handleColor(const vector<string> &args)
+{
+    if (args.size() != 1)
+    {
+        cout << "Usage: color on | off\n";
+        return false;
+    }
+
+    if (args[0] == "on")
+    {
+        Color::enabled = true;
+        cout << "Color output enabled\n";
+    }
+    else if (args[0] == "off")
+    {
+        Color::enabled = false;
+        cout << "Color output disabled\n";
+    }
+    else
+    {
+        cout << "Usage: color on | off\n";
+        return false;
+    }
+
+    return true;
+}
+
 bool CLI::handleAllocatorMode(const vector<string> &args)
 {
     if (args.size() != 1)
@@ -125,17 +159,56 @@ vector<string> CLI::parseInput(const string &input)
 
     return args;
 }
+static string allocModeToString(AllocationMode mode)
+{
+    switch (mode)
+    {
+    case AllocationMode::AUTO:
+        return "AUTO";
+    case AllocationMode::BUDDY:
+        return "BUDDY";
+    case AllocationMode::PHYSICAL:
+        return "PHYSICAL";
+    case AllocationMode::FORCED:
+        return "FORCED";
+    }
+    return "UNKNOWN";
+}
+
+static string pagePolicyToString(PageReplacementPolicy policy)
+{
+    switch (policy)
+    {
+    case PageReplacementPolicy::FIFO:
+        return "FIFO";
+    case PageReplacementPolicy::LRU:
+        return "LRU";
+    case PageReplacementPolicy::CLOCK:
+        return "CLOCK";
+    }
+    return "UNKNOWN";
+}
 
 void CLI::printPrompt() const
 {
-    if (current_process_ >= 0)
-    {
-        cout << "memsim(P" << current_process_ << ")> ";
-    }
-    else
-    {
-        cout << "memsim> ";
-    }
+    string proc =
+        (current_process_ >= 0)
+            ? "P" + to_string(current_process_)
+            : "NO-PROC";
+
+    string allocMode =
+        allocModeToString(memory_system_.getAllocationMode());
+
+    string pagePolicy =
+        pagePolicyToString(memory_system_.getPageReplacementPolicy());
+
+    cout << Color::cyan()
+         << "memsim["
+         << proc << " | "
+         << allocMode << " | "
+         << pagePolicy
+         << "]> "
+         << Color::reset();
 }
 
 bool CLI::handleInit(const vector<string> &args)
@@ -298,53 +371,111 @@ bool CLI::handleDump(const vector<string> &args)
         return false;
     }
 
-    memory_system_.printMemoryDump();
+    if (!args.empty() && args[0] == "bar")
+    {
+        memory_system_.printMemoryBar();
+    }
+    else
+    {
+        memory_system_.printMemoryDump();
+    }
+
     return true;
 }
 
 bool CLI::handleStats(const vector<string> &args)
 {
-    cout << "\n=== SYSTEM STATISTICS ===\n";
+    cout << Color::cyan()
+         << "\n================ SYSTEM STATISTICS ================\n\n"
+         << Color::reset();
 
-    cout << "Operations: " << memory_system_.getTotalOperations() << endl;
+    cout << "Total Operations        : "
+         << memory_system_.getTotalOperations() << "\n";
 
+    // ---------------- Physical Allocator ----------------
     auto phys = memory_system_.getPhysicalAllocatorStats();
-    cout << "\n[Physical Allocator]\n";
-    cout << "Used: " << formatSize(phys.used_memory) << endl;
-    cout << "Free: " << formatSize(phys.free_memory) << endl;
-    cout << "Internal Fragmentation: "
-         << formatSize(phys.internal_fragmentation) << endl;
-    cout << "Fragmentation Ratio: "
-         << phys.fragmentation_ratio * 100 << "%\n";
-    cout << "Requests: " << phys.allocation_requests << endl;
-    cout << "Successes: " << phys.allocation_successes << endl;
-    cout << "Failures: " << phys.allocation_failures << endl;
-    cout << "Memory Utilization: "
-         << phys.memory_utilization * 100 << "%\n";
+    double phys_frag = phys.fragmentation_ratio * 100;
 
+    cout << Color::blue() << "\n[Physical Allocator]\n"
+         << Color::reset();
+    cout << "  Used Memory           : " << formatSize(phys.used_memory) << "\n";
+    cout << "  Free Memory           : " << formatSize(phys.free_memory) << "\n";
+    cout << "  External Fragmentation: "
+         << (phys_frag > 30 ? Color::red() : phys_frag > 10 ? Color::yellow()
+                                                            : Color::green())
+         << phys_frag << " %"
+         << Color::reset() << "\n";
+    cout << "  Requests              : " << phys.allocation_requests << "\n";
+    cout << "  Success / Failure     : "
+         << phys.allocation_successes << " / "
+         << phys.allocation_failures << "\n";
+    cout << "  Utilization           : "
+         << phys.memory_utilization * 100 << " %\n";
+
+    // ---------------- Buddy Allocator ----------------
     auto buddy = memory_system_.getBuddyAllocatorStats();
-    cout << "\n[Buddy Allocator]\n";
-    cout << "Used: " << formatSize(buddy.used_memory) << endl;
-    cout << "Free: " << formatSize(buddy.free_memory) << endl;
-    cout << "Internal Fragmentation: "
-         << formatSize(buddy.internal_fragmentation) << endl;
-    cout << "Fragmentation Ratio: "
-         << buddy.fragmentation_ratio * 100 << "%\n";
-    cout << "Requests: " << buddy.allocation_requests << endl;
-    cout << "Successes: " << buddy.allocation_successes << endl;
-    cout << "Failures: " << buddy.allocation_failures << endl;
-    cout << "Memory Utilization: "
-         << buddy.memory_utilization * 100 << "%\n";
+    cout << Color::blue() << "\n[Buddy Allocator]\n"
+         << Color::reset();
+    cout << "  Used Memory           : " << formatSize(buddy.used_memory) << "\n";
+    cout << "  Free Memory           : " << formatSize(buddy.free_memory) << "\n";
+    cout << "  Internal Fragmentation: "
+         << Color::yellow()
+         << formatSize(buddy.internal_fragmentation)
+         << Color::reset() << "\n";
+    cout << "  Requests              : " << buddy.allocation_requests << "\n";
+    cout << "  Success / Failure     : "
+         << buddy.allocation_successes << " / "
+         << buddy.allocation_failures << "\n";
+    cout << "  Utilization           : "
+         << buddy.memory_utilization * 100 << " %\n";
 
+    // ---------------- Virtual Memory ----------------
     auto vmm = memory_system_.getVMMStats();
-    cout << "\n[Virtual Memory]\n";
-    cout << "Page Faults: " << vmm.page_faults << endl;
-    cout << "Page Replacements: " << vmm.page_replacements << endl;
-    cout << "Page Fault Rate: " << vmm.page_fault_rate * 100 << "%\n";
-    cout << "Free Frames: " << vmm.free_frames
-         << "/" << vmm.total_frames << endl;
+    double pf_rate = vmm.page_fault_rate * 100;
 
-    cout << "\n=========================\n";
+    cout << Color::blue() << "\n[Virtual Memory]\n"
+         << Color::reset();
+    cout << "  Page Faults           : "
+         << Color::red() << vmm.page_faults << Color::reset() << "\n";
+    cout << "  Page Replacements     : " << vmm.page_replacements << "\n";
+    cout << "  Page Fault Rate       : "
+         << (pf_rate > 30 ? Color::red() : pf_rate > 10 ? Color::yellow()
+                                                        : Color::green())
+         << pf_rate << " %"
+         << Color::reset() << "\n";
+    cout << "  Free Frames           : "
+         << vmm.free_frames << " / " << vmm.total_frames << "\n";
+
+    // ---------------- Cache Hierarchy ----------------
+    auto cache = memory_system_.getCacheStats();
+    cout << Color::blue() << "\n[CACHE HIERARCHY]\n"
+         << Color::reset();
+
+    auto printCache = [&](const string &name, const Cache::CacheStats &s)
+    {
+        size_t accesses = s.hits + s.misses;
+        double hit_ratio = accesses ? (double)s.hits / accesses * 100 : 0.0;
+
+        cout << "  " << name << "\n";
+        cout << "    Hits / Misses       : "
+             << s.hits << " / " << s.misses << "\n";
+        cout << "    Hit Ratio           : "
+             << (hit_ratio >= 70 ? Color::green() : hit_ratio >= 30 ? Color::yellow()
+                                                                    : Color::red())
+             << hit_ratio << " %"
+             << Color::reset() << "\n";
+    };
+
+    printCache("L1 Cache", cache.l1_stats);
+    printCache("L2 Cache", cache.l2_stats);
+    printCache("L3 Cache", cache.l3_stats);
+
+    cout << "  Main Memory Accesses  : "
+         << cache.main_memory_accesses << "\n";
+    cout << "  AMAT                  : "
+         << cache.avg_memory_access_time << " cycles\n";
+
+    cout << "\n==================================================\n";
     return true;
 }
 
@@ -446,10 +577,52 @@ bool CLI::handleQuit(const vector<string> &args)
 
 void CLI::printHelp() const
 {
-    for (const auto &pair : commands_)
+    using Entry = pair<string, string>;
+
+    auto section = [&](const string &title, const vector<Entry> &cmds)
     {
-        cout << pair.first << " - " << pair.second.description << endl;
-    }
+        cout << Color::cyan() << "\n"
+             << title << "\n"
+             << Color::reset();
+        for (const auto &c : cmds)
+        {
+            cout << "  "
+                 << left << setw(20) << c.first
+                 << c.second << "\n";
+        }
+    };
+
+    cout << Color::cyan()
+         << "\n================ AVAILABLE COMMANDS ================\n"
+         << Color::reset();
+
+    section("System", {{"init", "Initialize memory system"},
+                       {"quit", "Exit simulator"},
+                       {"help", "Show this help"}});
+
+    section("Process", {{"create <pid>", "Create a new process"},
+                        {"setproc <pid>", "Set current process"},
+                        {"terminate <pid>", "Terminate a process"},
+                        {"process [pid]", "Show process information"}});
+
+    section("Memory Allocation", {{"alloc <size>", "Allocate memory (B / KB / MB)"},
+                                  {"free <pid> <addr>", "Free allocated memory"},
+                                  {"mode <auto|buddy|physical|forced>", "Set allocation mode"},
+                                  {"strategy <first|best|worst>", "Set physical allocation strategy"}});
+
+    section("Virtual Memory", {{"access <addr> [write]", "Access virtual address"},
+                               {"policy <fifo|lru|clock>", "Set page replacement policy"}});
+
+    section("Inspection", {{"dump", "Dump physical memory layout"},
+                           {"stats", "Show system statistics"},
+                           {"bench [alloc|cache]", "Run benchmarks"},
+                           {"test [name]", "Run memory tests"}});
+
+    section("UI / UX", {{"color <on|off>", "Toggle colored output"}});
+
+    cout << Color::cyan()
+         << "\n====================================================\n"
+         << Color::reset();
 }
 
 ProcessId CLI::parseProcessId(const string &str) const

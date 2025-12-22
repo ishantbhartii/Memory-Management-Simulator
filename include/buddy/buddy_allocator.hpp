@@ -19,7 +19,8 @@ private:
     Size total_memory_;
     int max_order_;
     vector<list<Address>> free_lists_;
-    unordered_map<Address, pair<int, ProcessId>> allocated_blocks_;
+    unordered_map<Address, tuple<int, ProcessId, Size>> allocated_blocks_;
+
 
 
 

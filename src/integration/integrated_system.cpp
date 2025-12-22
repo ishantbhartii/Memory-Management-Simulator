@@ -3,6 +3,7 @@
 #include "allocator/best_fit.hpp"
 #include "allocator/worst_fit.hpp"
 #include "common/utils.hpp"
+#include "common/colors.hpp"
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
@@ -17,7 +18,7 @@ IntegratedMemorySystem::IntegratedMemorySystem(
     : total_memory_(total_memory),
       page_size_(page_size),
       alloc_strategy_(alloc_strategy),
-      allocation_mode_(AllocationMode::AUTO),   
+      allocation_mode_(AllocationMode::AUTO),
       page_replacement_policy_(page_policy),
       initialized_(false),
       total_operations_(0),
@@ -34,7 +35,6 @@ bool IntegratedMemorySystem::initialize()
         physical_allocator_ = createAllocator(alloc_strategy_, total_memory_);
         physical_allocator_->initialize(total_memory_);
         allocation_mode_ = AllocationMode::AUTO;
-
 
         Size buddy_memory = total_memory_ / 2;
         if (!isPowerOfTwo(buddy_memory))
@@ -143,8 +143,6 @@ AllocationResult IntegratedMemorySystem::allocateMemory(ProcessId process_id, Si
 
     return result;
 }
-
-
 
 void IntegratedMemorySystem::setAllocationMode(AllocationMode mode)
 {
@@ -272,15 +270,93 @@ Address IntegratedMemorySystem::translateVirtualToPhysical(
 
 void IntegratedMemorySystem::printMemoryDump() const
 {
-    cout << "\n=== MEMORY DUMP (Physical Memory) ===\n";
+    cout << Color::cyan()
+         << "\n================ MEMORY MAP ================\n"
+         << Color::reset();
 
     const auto &blocks = physical_allocator_->getBlocks();
-    for (const auto &block : blocks)
+
+    cout << left
+         << setw(14) << "Start"
+         << setw(14) << "End"
+         << setw(12) << "Size"
+         << setw(12) << "Status"
+         << "Owner\n";
+
+    cout << "------------------------------------------------\n";
+
+    for (const auto &b : blocks)
     {
-        cout << block << "\n";
+        Address start = b.start_address;
+        Address end = b.start_address + b.size - 1;
+
+        cout << hex << showbase
+             << setw(14) << start
+             << setw(14) << end
+             << dec << noshowbase
+             << setw(12) << formatSize(b.size);
+
+        if (b.status == BlockStatus::ALLOCATED)
+        {
+            cout << Color::green()
+                 << setw(12) << "ALLOC"
+                 << Color::reset()
+                 << "P" << b.process_id;
+        }
+        else
+        {
+            cout << Color::yellow()
+                 << setw(12) << "FREE"
+                 << Color::reset()
+                 << "-";
+        }
+
+        cout << "\n";
     }
 
-    cout << "===============================\n";
+    cout << Color::cyan()
+         << "================================================\n"
+         << Color::reset();
+}
+
+void IntegratedMemorySystem::printMemoryBar() const
+{
+    constexpr size_t BAR_WIDTH = 50;
+
+    const auto &blocks = physical_allocator_->getBlocks();
+    Size total = total_memory_;
+
+    cout << Color::cyan()
+         << "\n================ MEMORY BAR ================\n\n"
+         << Color::reset();
+
+    cout << "[";
+
+    for (const auto &b : blocks)
+    {
+        double ratio = (double)b.size / total;
+        size_t width = max<size_t>(1, ratio * BAR_WIDTH);
+
+        for (size_t i = 0; i < width; ++i)
+        {
+            if (b.status == BlockStatus::ALLOCATED)
+                cout << Color::green() << "#" << Color::reset();
+            else
+                cout << Color::yellow() << "." << Color::reset();
+        }
+    }
+
+    cout << "]\n\n";
+
+    cout << "Legend:\n";
+    cout << "  " << Color::green() << "#" << Color::reset()
+         << " = Allocated\n";
+    cout << "  " << Color::yellow() << "." << Color::reset()
+         << " = Free\n";
+
+    cout << Color::cyan()
+         << "\n===========================================\n"
+         << Color::reset();
 }
 
 void IntegratedMemorySystem::printStatistics() const
@@ -421,4 +497,10 @@ VirtualMemoryManager::VMMStats IntegratedMemorySystem::getVMMStats() const
     if (!virtual_memory_manager_)
         return VirtualMemoryManager::VMMStats{};
     return virtual_memory_manager_->getStats();
+}
+CacheHierarchy::HierarchyStats IntegratedMemorySystem::getCacheStats() const
+{
+    if (!cache_hierarchy_)
+        return CacheHierarchy::HierarchyStats{};
+    return cache_hierarchy_->getStats();
 }

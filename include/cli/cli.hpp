@@ -22,6 +22,8 @@ private:
     bool running_;
     ProcessId current_process_;
     bool handleAllocatorMode(const vector<string> &args);
+    bool handleColor(const vector<string> &args);
+
 
 
 public:

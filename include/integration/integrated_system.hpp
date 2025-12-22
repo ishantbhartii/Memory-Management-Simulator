@@ -14,9 +14,6 @@
 
 using namespace std;
 
-
-
-
 class IntegratedMemorySystem
 {
 private:
@@ -25,7 +22,6 @@ private:
     unique_ptr<CacheHierarchy> cache_hierarchy_;
     unique_ptr<VirtualMemoryManager> virtual_memory_manager_;
     AllocationMode allocation_mode_;
-
 
     Size total_memory_;
     Size page_size_;
@@ -55,6 +51,7 @@ public:
     void setAllocationMode(AllocationMode mode);
     MemoryStats getBuddyAllocatorStats() const;
     VirtualMemoryManager::VMMStats getVMMStats() const;
+    void printMemoryBar() const;
 
     bool initialize();
     bool isInitialized() const { return initialized_; }
@@ -72,6 +69,7 @@ public:
     void printMemoryDump() const;
     void printStatistics() const;
     void printProcessInfo(ProcessId process_id) const;
+    CacheHierarchy::HierarchyStats getCacheStats() const;
 
     void runMemoryTest(const string &test_name);
     void benchmarkAllocationStrategies();

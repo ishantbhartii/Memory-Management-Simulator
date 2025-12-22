@@ -58,7 +58,8 @@ AllocationResult BuddyAllocator::allocate(const AllocationRequest &request)
     Address address = free_lists_[order].front();
     free_lists_[order].pop_front();
 
-    allocated_blocks_[address] = make_pair(required_order, request.process_id);
+    allocated_blocks_[address] =
+        make_tuple(required_order, request.process_id, request.size);
 
     allocation_successes_++;
     internal_fragmentation_ += (actual_size - request.size);
@@ -74,9 +75,15 @@ bool BuddyAllocator::deallocate(Address address)
         return false;
     }
 
-    int order = it->second.first;
+    int order = get<0>(it->second);
+    Size requested_size = get<2>(it->second);
+    Size block_size = getBlockSize(order);
+
+    internal_fragmentation_ -= (block_size - requested_size);
+
     allocated_blocks_.erase(it);
     mergeBuddies(order, address);
+
     return true;
 }
 
@@ -88,7 +95,8 @@ MemoryStats BuddyAllocator::getStats() const
     Size used = 0;
     for (const auto &pair : allocated_blocks_)
     {
-        used += getBlockSize(pair.second.first);
+        used += getBlockSize(get<0>(pair.second));
+
     }
 
     stats.used_memory = used;
@@ -144,8 +152,8 @@ vector<MemoryBlock> BuddyAllocator::getAllocatedBlocks() const
     for (const auto &pair : allocated_blocks_)
     {
         Address addr = pair.first;
-        int order = pair.second.first;
-        ProcessId pid = pair.second.second;
+        int order = get<0>(pair.second);
+        ProcessId pid = get<1>(pair.second);
 
         blocks.emplace_back(
             addr,
