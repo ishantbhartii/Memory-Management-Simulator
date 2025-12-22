@@ -25,6 +25,7 @@ private:
     Size page_size_;
     AllocationStrategy alloc_strategy_;
     PageReplacementPolicy page_replacement_policy_;
+    bool initialized_;
 
     unordered_map<ProcessId, vector<Address>> process_allocations_;
 
@@ -44,6 +45,8 @@ public:
     ~IntegratedMemorySystem() = default;
 
     bool initialize();
+    bool isInitialized() const { return initialized_; }
+
 
     bool createProcess(ProcessId process_id);
     bool terminateProcess(ProcessId process_id);

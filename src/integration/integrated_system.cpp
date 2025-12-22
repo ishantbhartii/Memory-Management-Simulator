@@ -18,6 +18,7 @@ IntegratedMemorySystem::IntegratedMemorySystem(
       page_size_(page_size),
       alloc_strategy_(alloc_strategy),
       page_replacement_policy_(page_policy),
+      initialized_(false),
       total_operations_(0),
       cache_hits_(0),
       cache_misses_(0),
@@ -25,8 +26,13 @@ IntegratedMemorySystem::IntegratedMemorySystem(
 {
 }
 
+
 bool IntegratedMemorySystem::initialize()
 {
+    if (initialized_) {
+        cout << "System already initialized" << endl;
+        return true;
+    }
     try
     {
         physical_allocator_ = createAllocator(alloc_strategy_, total_memory_);
@@ -52,7 +58,7 @@ bool IntegratedMemorySystem::initialize()
             total_memory_,
             page_size_,
             page_replacement_policy_);
-
+        initialized_=true;
         return true;
     }
     catch (const exception &e)
@@ -227,15 +233,32 @@ void IntegratedMemorySystem::printStatistics() const
     cout << "Operations: " << total_operations_ << endl;
     cout << "Cache hits: " << cache_hits_ << endl;
     cout << "Cache misses: " << cache_misses_ << endl;
-    auto buddy_stats = buddy_allocator_->getStats();
 
-    cout << "Buddy Allocator: "
-              << formatSize(buddy_stats.used_memory) << " used, "
-              << formatSize(buddy_stats.free_memory) << " free, "
-              << "Internal Fragmentation: "
-              << buddy_stats.fragmentation_ratio * 100 << "%"
-              << endl;
+    if (buddy_allocator_)
+    {
+        auto buddy_stats = buddy_allocator_->getStats();
+        cout << "Buddy Allocator: "
+             << formatSize(buddy_stats.used_memory) << " used, "
+             << formatSize(buddy_stats.free_memory) << " free, "
+             << "Internal Fragmentation: "
+             << buddy_stats.fragmentation_ratio * 100 << "%"
+             << endl;
+    }
+    else
+    {
+        cout << "Buddy Allocator: not initialized" << endl;
+    }
+
+    if (physical_allocator_)
+    {
+        auto phys_stats = physical_allocator_->getStats();
+        cout << "Physical Allocator: "
+             << formatSize(phys_stats.used_memory) << " used, "
+             << formatSize(phys_stats.free_memory) << " free"
+             << endl;
+    }
 }
+
 
 void IntegratedMemorySystem::printProcessInfo(ProcessId process_id) const
 {

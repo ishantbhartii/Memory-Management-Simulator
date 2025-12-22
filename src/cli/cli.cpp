@@ -119,8 +119,17 @@ bool CLI::handleTerminateProcess(const vector<string>& args) {
 }
 
 bool CLI::handleAllocate(const vector<string>& args) {
+    if (!memory_system_.isInitialized()) {
+        cout << "Error: system not initialized. Run 'init' first." << endl;
+        return false;
+    }
+
     ProcessId pid = current_process_;
     Size size = 0;
+    if (pid < 0) {
+    cout << "Error: no process selected. Use 'create' and 'setproc'." << endl;
+    return false;
+}
 
     if (args.size() == 1) {
         if (pid < 0) return false;

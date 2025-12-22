@@ -1,4 +1,5 @@
 #include "allocator/base_allocator.hpp"
+#include "common/utils.hpp"
 #include <algorithm>
 #include <stdexcept>
 

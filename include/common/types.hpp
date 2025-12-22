@@ -111,11 +111,13 @@ struct MemoryStats
           total_blocks(0),
           free_blocks(0),
           allocated_blocks(0),
+          largest_free_block(0),
+          internal_fragmentation(0),
           allocation_requests(0),
           allocation_successes(0),
-          allocation_failures(0),
-          internal_fragmentation(0)
-              largest_free_block(0) {}
+          allocation_failures(0)
+    {}
 };
+
 
 #endif
