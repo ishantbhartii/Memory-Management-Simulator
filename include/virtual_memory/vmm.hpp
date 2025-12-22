@@ -11,11 +11,15 @@
 
 using namespace std;
 
-class VirtualMemoryManager {
+class VirtualMemoryManager
+{
 private:
     Size physical_memory_size_;
     Size page_size_;
     size_t num_frames_;
+    size_t page_accesses_;
+    size_t page_faults_;
+    size_t page_replacements_;
 
     vector<bool> frame_allocation_;
     unordered_map<ProcessId, unique_ptr<PageTable>> process_tables_;
@@ -25,13 +29,13 @@ private:
     unordered_map<ProcessId, unordered_map<Address, size_t>> access_counts_;
     unordered_map<ProcessId, unordered_map<Address, size_t>> access_times_;
 
-    size_t page_faults_;
-    size_t page_replacements_;
-    size_t total_accesses_;
-
     static size_t global_time_;
 
 public:
+    size_t getPageFaults() const { return page_faults_; }
+    size_t getPageAccesses() const { return page_accesses_; }
+    size_t getPageReplacements() const { return page_replacements_; }
+
     VirtualMemoryManager(Size physical_memory_size, Size page_size, PageReplacementPolicy policy);
 
     bool createProcess(ProcessId process_id);
@@ -47,7 +51,8 @@ public:
     bool allocatePages(ProcessId process_id, size_t num_pages);
     bool deallocatePages(ProcessId process_id, size_t num_pages);
 
-    struct VMMStats {
+    struct VMMStats
+    {
         size_t page_faults;
         size_t page_replacements;
         size_t total_accesses;
@@ -57,7 +62,7 @@ public:
     };
 
     VMMStats getStats() const;
-    const PageTable* getPageTable(ProcessId process_id) const;
+    const PageTable *getPageTable(ProcessId process_id) const;
     size_t getPageFaultCount() const { return page_faults_; }
 
     Address virtualToPage(Address virtual_address) const;

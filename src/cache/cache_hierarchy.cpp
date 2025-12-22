@@ -26,26 +26,18 @@ CacheHierarchy::CacheHierarchy(
     l3_cache_ = createCache(l3_size, line_size, l3_associativity, l3_policy);
 }
 
-bool CacheHierarchy::read(Address address, ProcessId process_id) {
+bool CacheHierarchy::read(Address address, ProcessId process_id)
+{
     total_accesses_++;
 
-    if (l1_cache_->read(address, process_id)) {
-        l1_hits_++;
+    if (l1_cache_->read(address, process_id))
         return true;
-    }
 
-    if (l2_cache_->read(address, process_id)) {
-        l2_hits_++;
-        l1_cache_->read(address, process_id);
+    if (l2_cache_->read(address, process_id))
         return true;
-    }
 
-    if (l3_cache_->read(address, process_id)) {
-        l3_hits_++;
-        l2_cache_->read(address, process_id);
-        l1_cache_->read(address, process_id);
+    if (l3_cache_->read(address, process_id))
         return true;
-    }
 
     main_memory_accesses_++;
     l3_cache_->read(address, process_id);
@@ -55,41 +47,28 @@ bool CacheHierarchy::read(Address address, ProcessId process_id) {
     return false;
 }
 
-bool CacheHierarchy::write(Address address, ProcessId process_id) {
+
+bool CacheHierarchy::write(Address address, ProcessId process_id)
+{
     total_accesses_++;
 
-    bool l1_hit = l1_cache_->write(address, process_id);
+    if (l1_cache_->write(address, process_id))
+        return true;
 
-    if (l1_hit) {
-        l1_hits_++;
-        l2_cache_->write(address, process_id);
-        l3_cache_->write(address, process_id);
-        main_memory_accesses_++;
-    } else {
-        bool l2_hit = l2_cache_->write(address, process_id);
-        if (l2_hit) {
-            l2_hits_++;
-            l1_cache_->write(address, process_id);
-            l3_cache_->write(address, process_id);
-            main_memory_accesses_++;
-        } else {
-            bool l3_hit = l3_cache_->write(address, process_id);
-            if (l3_hit) {
-                l3_hits_++;
-                l2_cache_->write(address, process_id);
-                l1_cache_->write(address, process_id);
-                main_memory_accesses_++;
-            } else {
-                main_memory_accesses_++;
-                l3_cache_->write(address, process_id);
-                l2_cache_->write(address, process_id);
-                l1_cache_->write(address, process_id);
-            }
-        }
-    }
+    if (l2_cache_->write(address, process_id))
+        return true;
 
-    return l1_hit;
+    if (l3_cache_->write(address, process_id))
+        return true;
+
+    main_memory_accesses_++;
+    l3_cache_->write(address, process_id);
+    l2_cache_->write(address, process_id);
+    l1_cache_->write(address, process_id);
+
+    return false;
 }
+
 
 CacheHierarchy::HierarchyStats CacheHierarchy::getStats() const {
     HierarchyStats stats;
@@ -113,20 +92,25 @@ void CacheHierarchy::resetStats() {
     main_memory_accesses_ = 0;
 }
 
-double CacheHierarchy::calculateAccessTime() const {
-    if (total_accesses_ == 0) return 0.0;
+double CacheHierarchy::calculateAccessTime() const
+{
+    if (total_accesses_ == 0)
+        return 0.0;
 
-    double total_time = 0.0;
+    constexpr double L1_TIME = 1.0;
+    constexpr double L2_TIME = 10.0;
+    constexpr double L3_TIME = 50.0;
+    constexpr double MEM_TIME = 200.0;
 
-    total_time += l1_hits_ * 1.0;
+    auto l1 = l1_cache_->getStats();
+    auto l2 = l2_cache_->getStats();
+    auto l3 = l3_cache_->getStats();
 
-    size_t l2_only_hits = l2_hits_ - l1_hits_;
-    total_time += l2_only_hits * 10.0;
-
-    size_t l3_only_hits = l3_hits_ - l2_hits_;
-    total_time += l3_only_hits * 50.0;
-
-    total_time += main_memory_accesses_ * 200.0;
+    double total_time =
+        l1.hits * L1_TIME +
+        l2.hits * L2_TIME +
+        l3.hits * L3_TIME +
+        main_memory_accesses_ * MEM_TIME;
 
     return total_time / total_accesses_;
 }

@@ -21,7 +21,6 @@ AllocationResult FirstFitAllocator::allocate(const AllocationRequest& request) {
     Address alloc_address = block_it->start_address;
     BlockId alloc_block_id = block_it->block_id;
     if (block_it->size > request.size) {
-        internal_fragmentation_ += (block_it->size - request.size);
         splitBlock(block_it, request.size);
         block_it = findBlockById(alloc_block_id);
     }

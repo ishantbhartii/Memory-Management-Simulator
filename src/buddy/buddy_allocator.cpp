@@ -27,6 +27,7 @@ void BuddyAllocator::initialize()
 
 AllocationResult BuddyAllocator::allocate(const AllocationRequest &request)
 {
+    allocation_requests_++;
     if (request.size == 0 || request.size > total_memory_)
     {
         allocation_failures_++;

@@ -271,6 +271,19 @@ void IntegratedMemorySystem::printStatistics() const
              << formatSize(phys_stats.free_memory) << " free"
              << endl;
     }
+    auto vm = virtual_memory_manager_.get();
+
+    cout << "Virtual Memory:" << endl;
+    cout << "Page accesses: " << vm->getPageAccesses() << endl;
+    cout << "Page faults: " << vm->getPageFaults() << endl;
+    cout << "Page replacements: " << vm->getPageReplacements() << endl;
+
+    if (vm->getPageAccesses() > 0)
+    {
+        cout << "Page fault rate: "
+             << (double)vm->getPageFaults() / vm->getPageAccesses()
+             << endl;
+    }
 }
 
 void IntegratedMemorySystem::printProcessInfo(ProcessId process_id) const
