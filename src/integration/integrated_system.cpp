@@ -149,7 +149,7 @@ bool IntegratedMemorySystem::deallocateMemory(ProcessId process_id, Address addr
         return false;
     }
 
-    total_operations_++;
+    
 
     auto it = process_allocations_.find(process_id);
     if (it == process_allocations_.end())
@@ -177,7 +177,7 @@ bool IntegratedMemorySystem::accessMemory(ProcessId process_id, Address virtual_
         return false;
     }
 
-    total_operations_++;
+    
 
     if (!virtual_memory_manager_->accessMemory(process_id, virtual_address, is_write))
     {
@@ -350,8 +350,20 @@ void IntegratedMemorySystem::benchmarkCachePerformance()
 
     terminateProcess(pid);
 }
-
-void IntegratedMemorySystem::updateStatistics()
-{
-    total_operations_++;
+MemoryStats IntegratedMemorySystem::getPhysicalAllocatorStats() const {
+    if (!physical_allocator_) return MemoryStats();
+    return physical_allocator_->getStats();
 }
+
+MemoryStats IntegratedMemorySystem::getBuddyAllocatorStats() const {
+    if (!buddy_allocator_) return MemoryStats();
+    return buddy_allocator_->getStats();
+}
+
+VirtualMemoryManager::VMMStats IntegratedMemorySystem::getVMMStats() const {
+    if (!virtual_memory_manager_)
+        return VirtualMemoryManager::VMMStats{};
+    return virtual_memory_manager_->getStats();
+}
+
+

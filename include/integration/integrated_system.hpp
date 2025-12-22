@@ -14,7 +14,8 @@
 
 using namespace std;
 
-class IntegratedMemorySystem {
+class IntegratedMemorySystem
+{
 private:
     unique_ptr<BaseAllocator> physical_allocator_;
     unique_ptr<BuddyAllocator> buddy_allocator_;
@@ -39,14 +40,15 @@ public:
         Size total_memory,
         Size page_size = 4096,
         AllocationStrategy alloc_strategy = AllocationStrategy::FIRST_FIT,
-        PageReplacementPolicy page_policy = PageReplacementPolicy::LRU
-    );
+        PageReplacementPolicy page_policy = PageReplacementPolicy::LRU);
 
     ~IntegratedMemorySystem() = default;
+    MemoryStats getPhysicalAllocatorStats() const;
+    MemoryStats getBuddyAllocatorStats() const;
+    VirtualMemoryManager::VMMStats getVMMStats() const;
 
     bool initialize();
     bool isInitialized() const { return initialized_; }
-
 
     bool createProcess(ProcessId process_id);
     bool terminateProcess(ProcessId process_id);
@@ -62,7 +64,7 @@ public:
     void printStatistics() const;
     void printProcessInfo(ProcessId process_id) const;
 
-    void runMemoryTest(const string& test_name);
+    void runMemoryTest(const string &test_name);
     void benchmarkAllocationStrategies();
     void benchmarkCachePerformance();
 

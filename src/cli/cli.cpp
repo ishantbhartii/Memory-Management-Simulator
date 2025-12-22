@@ -202,14 +202,46 @@ bool CLI::handleDump(const vector<string>& args) {
 }
 
 bool CLI::handleStats(const vector<string>& args) {
-    if (!memory_system_.isInitialized()) {
-    cout << "Error: system not initialized. Run 'init' first." << endl;
-    return false;
-}
+    cout << "\n=== SYSTEM STATISTICS ===\n";
 
-    memory_system_.printStatistics();
+    cout << "Operations: " << memory_system_.getTotalMemory() << endl;
+
+    auto phys = memory_system_.getPhysicalAllocatorStats();
+    cout << "\n[Physical Allocator]\n";
+    cout << "Used: " << formatSize(phys.used_memory) << endl;
+    cout << "Free: " << formatSize(phys.free_memory) << endl;
+    cout << "Internal Fragmentation: "
+         << formatSize(phys.internal_fragmentation) << endl;
+    cout << "Fragmentation Ratio: "
+         << phys.fragmentation_ratio * 100 << "%\n";
+    cout << "Requests: " << phys.allocation_requests << endl;
+    cout << "Successes: " << phys.allocation_successes << endl;
+    cout << "Failures: " << phys.allocation_failures << endl;
+
+    auto buddy = memory_system_.getBuddyAllocatorStats();
+    cout << "\n[Buddy Allocator]\n";
+    cout << "Used: " << formatSize(buddy.used_memory) << endl;
+    cout << "Free: " << formatSize(buddy.free_memory) << endl;
+    cout << "Internal Fragmentation: "
+         << formatSize(buddy.internal_fragmentation) << endl;
+    cout << "Fragmentation Ratio: "
+         << buddy.fragmentation_ratio * 100 << "%\n";
+    cout << "Requests: " << buddy.allocation_requests << endl;
+    cout << "Successes: " << buddy.allocation_successes << endl;
+    cout << "Failures: " << buddy.allocation_failures << endl;
+
+    auto vmm = memory_system_.getVMMStats();
+    cout << "\n[Virtual Memory]\n";
+    cout << "Page Faults: " << vmm.page_faults << endl;
+    cout << "Page Replacements: " << vmm.page_replacements << endl;
+    cout << "Page Fault Rate: " << vmm.page_fault_rate * 100 << "%\n";
+    cout << "Free Frames: " << vmm.free_frames
+         << "/" << vmm.total_frames << endl;
+
+    cout << "\n=========================\n";
     return true;
 }
+
 
 bool CLI::handleSwitchStrategy(const vector<string>& args) {
     if (args.size() != 1) return false;
