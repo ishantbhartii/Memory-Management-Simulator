@@ -66,7 +66,6 @@ bool IntegratedMemorySystem::initialize()
     }
 }
 
-
 unique_ptr<BaseAllocator>
 IntegratedMemorySystem::createAllocator(AllocationStrategy strategy, Size memory_size)
 {
@@ -121,17 +120,6 @@ AllocationResult IntegratedMemorySystem::allocateMemory(ProcessId process_id, Si
         return AllocationResult(false, 0, -1);
     }
 
-    if (isPowerOfTwo(size))
-    {
-        AllocationResult result = buddy_allocator_->allocate({size, process_id});
-        if (result.success)
-        {
-            it->second.push_back(result.address);
-            cache_misses_++;
-            return result;
-        }
-    }
-
     AllocationResult result = physical_allocator_->allocate({size, process_id});
     if (result.success)
     {
@@ -145,26 +133,36 @@ AllocationResult IntegratedMemorySystem::allocateMemory(ProcessId process_id, Si
 bool IntegratedMemorySystem::deallocateMemory(ProcessId process_id, Address address)
 {
     if (!initialized_)
-    {
-        return false;
-    }
-
-    
-
-    auto it = process_allocations_.find(process_id);
-    if (it == process_allocations_.end())
         return false;
 
-    if (buddy_allocator_->deallocate(address))
+    auto pit = process_allocations_.find(process_id);
+    if (pit == process_allocations_.end())
+        return false;
+
+    auto &allocs = pit->second;
+
+    if (find(allocs.begin(), allocs.end(), address) == allocs.end())
+        return false;
+
+    if (buddy_allocator_ && buddy_allocator_->deallocate(address))
     {
-        it->second.erase(remove(it->second.begin(), it->second.end(), address), it->second.end());
+        allocs.erase(remove(allocs.begin(), allocs.end(), address), allocs.end());
         return true;
     }
 
-    if (physical_allocator_->deallocate(static_cast<BlockId>(address)))
+    const auto &blocks = physical_allocator_->getBlocks();
+    for (const auto &block : blocks)
     {
-        it->second.erase(remove(it->second.begin(), it->second.end(), address), it->second.end());
-        return true;
+        if (block.start_address == address &&
+            block.status == BlockStatus::ALLOCATED &&
+            block.process_id == process_id)
+        {
+            if (physical_allocator_->deallocate(block.block_id))
+            {
+                allocs.erase(remove(allocs.begin(), allocs.end(), address), allocs.end());
+                return true;
+            }
+        }
     }
 
     return false;
@@ -176,8 +174,6 @@ bool IntegratedMemorySystem::accessMemory(ProcessId process_id, Address virtual_
     {
         return false;
     }
-
-    
 
     if (!virtual_memory_manager_->accessMemory(process_id, virtual_address, is_write))
     {
@@ -209,7 +205,6 @@ bool IntegratedMemorySystem::hasProcess(ProcessId pid) const
     return process_allocations_.find(pid) != process_allocations_.end();
 }
 
-
 void IntegratedMemorySystem::switchPageReplacementPolicy(PageReplacementPolicy new_policy)
 {
     page_replacement_policy_ = new_policy;
@@ -231,20 +226,33 @@ Address IntegratedMemorySystem::translateVirtualToPhysical(
     ProcessId process_id,
     Address virtual_address)
 {
-    return virtual_address;
+    auto page_table = virtual_memory_manager_->getPageTable(process_id);
+    if (!page_table)
+        return static_cast<Address>(-1);
+
+    Address virtual_page = virtual_address / page_size_;
+    Address offset = virtual_address % page_size_;
+
+    const auto &entries = page_table->getEntries();
+
+    auto it = entries.find(virtual_page);
+    if (it == entries.end() || !it->second.present)
+        return static_cast<Address>(-1);
+
+    return it->second.frame_number * page_size_ + offset;
 }
 
 void IntegratedMemorySystem::printMemoryDump() const
 {
-    cout << "=== INTEGRATED MEMORY SYSTEM DUMP ===" << endl;
+    cout << "\n=== MEMORY DUMP (Physical Memory) ===\n";
 
-    for (const auto &block : physical_allocator_->getBlocks())
+    const auto &blocks = physical_allocator_->getBlocks();
+    for (const auto &block : blocks)
     {
-        cout << formatAddress(block.start_address) << " "
-             << formatSize(block.size) << " "
-             << (block.status == BlockStatus::FREE ? "FREE" : "ALLOCATED")
-             << endl;
+        cout << block << "\n";
     }
+
+    cout << "===============================\n";
 }
 
 void IntegratedMemorySystem::printStatistics() const
@@ -355,20 +363,23 @@ void IntegratedMemorySystem::benchmarkCachePerformance()
 
     terminateProcess(pid);
 }
-MemoryStats IntegratedMemorySystem::getPhysicalAllocatorStats() const {
-    if (!physical_allocator_) return MemoryStats();
+MemoryStats IntegratedMemorySystem::getPhysicalAllocatorStats() const
+{
+    if (!physical_allocator_)
+        return MemoryStats();
     return physical_allocator_->getStats();
 }
 
-MemoryStats IntegratedMemorySystem::getBuddyAllocatorStats() const {
-    if (!buddy_allocator_) return MemoryStats();
+MemoryStats IntegratedMemorySystem::getBuddyAllocatorStats() const
+{
+    if (!buddy_allocator_)
+        return MemoryStats();
     return buddy_allocator_->getStats();
 }
 
-VirtualMemoryManager::VMMStats IntegratedMemorySystem::getVMMStats() const {
+VirtualMemoryManager::VMMStats IntegratedMemorySystem::getVMMStats() const
+{
     if (!virtual_memory_manager_)
         return VirtualMemoryManager::VMMStats{};
     return virtual_memory_manager_->getStats();
 }
-
-

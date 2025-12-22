@@ -206,7 +206,12 @@ bool CLI::handleDeallocate(const vector<string> &args)
     ProcessId pid = parseProcessId(args[0]);
     Address addr = parseAddress(args[1]);
 
-    return memory_system_.deallocateMemory(pid, addr);
+    if (!memory_system_.deallocateMemory(pid, addr))
+    {
+        cout << "Free failed: invalid address or permission denied" << endl;
+        return false;
+    }
+    return true;
 }
 
 bool CLI::handleAccess(const vector<string> &args)
@@ -275,6 +280,8 @@ bool CLI::handleStats(const vector<string> &args)
     cout << "Requests: " << phys.allocation_requests << endl;
     cout << "Successes: " << phys.allocation_successes << endl;
     cout << "Failures: " << phys.allocation_failures << endl;
+    cout << "Memory Utilization: "
+         << phys.memory_utilization * 100 << "%\n";
 
     auto buddy = memory_system_.getBuddyAllocatorStats();
     cout << "\n[Buddy Allocator]\n";
@@ -287,6 +294,8 @@ bool CLI::handleStats(const vector<string> &args)
     cout << "Requests: " << buddy.allocation_requests << endl;
     cout << "Successes: " << buddy.allocation_successes << endl;
     cout << "Failures: " << buddy.allocation_failures << endl;
+    cout << "Memory Utilization: "
+         << buddy.memory_utilization * 100 << "%\n";
 
     auto vmm = memory_system_.getVMMStats();
     cout << "\n[Virtual Memory]\n";
@@ -384,7 +393,6 @@ bool CLI::handleSetProcess(const vector<string> &args)
     return true;
 }
 
-
 bool CLI::handleHelp(const vector<string> &args)
 {
     printHelp();
@@ -435,7 +443,35 @@ Address CLI::parseAddress(const string &str) const
 
 Size CLI::parseSize(const string &str) const
 {
-    return parseAddress(str);
+    string s = str;
+    for (auto &c : s)
+        c = tolower(c);
+
+    Size multiplier = 1;
+
+    if (s.size() >= 2 && s.substr(s.size() - 2) == "kb")
+    {
+        multiplier = 1024;
+        s = s.substr(0, s.size() - 2);
+    }
+    else if (s.size() >= 2 && s.substr(s.size() - 2) == "mb")
+    {
+        multiplier = 1024 * 1024;
+        s = s.substr(0, s.size() - 2);
+    }
+    else if (s.back() == 'b')
+    {
+        s.pop_back();
+    }
+
+    try
+    {
+        return stoull(s) * multiplier;
+    }
+    catch (...)
+    {
+        return 0;
+    }
 }
 
 AllocationStrategy CLI::parseAllocationStrategy(const string &str) const

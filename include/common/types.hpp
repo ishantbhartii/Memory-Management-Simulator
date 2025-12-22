@@ -68,6 +68,28 @@ struct MemoryBlock
         return status == BlockStatus::FREE;
     }
 };
+#include <ostream>
+
+inline std::ostream& operator<<(std::ostream& os, const MemoryBlock& block)
+{
+    os << "[0x"
+       << std::hex << block.start_address
+       << " - 0x"
+       << (block.start_address + block.size - 1)
+       << std::dec << "] ";
+
+    if (block.status == BlockStatus::FREE)
+    {
+        os << "FREE";
+    }
+    else
+    {
+        os << "USED (pid=" << block.process_id
+           << ", id=" << block.block_id << ")";
+    }
+
+    return os;
+}
 
 struct AllocationRequest
 {
@@ -102,6 +124,7 @@ struct MemoryStats
     size_t allocation_requests;
     size_t allocation_successes;
     size_t allocation_failures;
+    double memory_utilization=0.0;
 
     MemoryStats()
         : total_memory(0),

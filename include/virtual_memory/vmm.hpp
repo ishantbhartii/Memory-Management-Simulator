@@ -20,6 +20,7 @@ private:
     size_t page_accesses_;
     size_t page_faults_;
     size_t page_replacements_;
+    
 
     vector<bool> frame_allocation_;
     unordered_map<ProcessId, unique_ptr<PageTable>> process_tables_;
@@ -30,6 +31,8 @@ private:
     unordered_map<ProcessId, unordered_map<Address, size_t>> access_times_;
 
     static size_t global_time_;
+private:
+    void invalidatePageUsingFrame(size_t frame);
 
 public:
     size_t getPageFaults() const { return page_faults_; }

@@ -124,6 +124,15 @@ MemoryStats BuddyAllocator::getStats() const
     {
         stats.fragmentation_ratio = 0.0;
     }
+    if (stats.total_memory > 0)
+    {
+        stats.memory_utilization =
+            static_cast<double>(stats.used_memory) / stats.total_memory;
+    }
+    else
+    {
+        stats.memory_utilization = 0.0;
+    }
 
     return stats;
 }

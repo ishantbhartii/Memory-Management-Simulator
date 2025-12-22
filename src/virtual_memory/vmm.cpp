@@ -102,9 +102,9 @@ bool VirtualMemoryManager::handlePageFault(ProcessId process_id, Address virtual
     {
         frame = selectVictimPage();
         if (frame == static_cast<size_t>(-1))
-        {
             return false;
-        }
+
+        invalidatePageUsingFrame(frame);
         page_replacements_++;
     }
 
@@ -115,6 +115,21 @@ bool VirtualMemoryManager::handlePageFault(ProcessId process_id, Address virtual
     }
 
     return it->second->addMapping(virtual_page, frame);
+}
+void VirtualMemoryManager::invalidatePageUsingFrame(size_t frame)
+{
+    for (auto &proc : process_tables_)
+    {
+        for (auto &entry : proc.second->getEntries())
+        {
+            if (entry.second.present &&
+                entry.second.frame_number == frame)
+            {
+                entry.second.present = false;
+                return;
+            }
+        }
+    }
 }
 
 Address VirtualMemoryManager::selectVictimPage()
@@ -303,7 +318,8 @@ VirtualMemoryManager::VMMStats VirtualMemoryManager::getStats() const
             : 0.0;
 
     stats.free_frames = 0;
-    for (bool allocated : frame_allocation_) {
+    for (bool allocated : frame_allocation_)
+    {
         if (!allocated)
             stats.free_frames++;
     }
@@ -311,7 +327,6 @@ VirtualMemoryManager::VMMStats VirtualMemoryManager::getStats() const
     stats.total_frames = num_frames_;
     return stats;
 }
-
 
 const PageTable *VirtualMemoryManager::getPageTable(ProcessId process_id) const
 {
