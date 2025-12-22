@@ -190,6 +190,36 @@ memory-simulator/
 ```
 
 ---
+## 📸 Demonstration
+
+### Allocation & Fragmentation
+
+#### Memory Layout (Dump)
+![Allocation Dump](docs/screenshots/allocation_dump.png)
+
+#### Allocation Statistics
+![Allocation Stats](docs/screenshots/allocation_stats.png)
+
+---
+
+### Buddy Allocator
+
+#### Buddy Memory Layout
+![Buddy Dump](docs/screenshots/buddy_dump.png)
+
+#### Buddy Allocator Statistics
+![Buddy Stats](docs/screenshots/buddy_stats.png)
+
+---
+
+### Cache & Virtual Memory
+
+#### Cache + Virtual Memory Access Flow
+![Cache VM Dump](docs/screenshots/cache_vm_dump.png)
+
+#### Cache & VM Statistics
+![Cache VM Stats](docs/screenshots/cache_vm_stats.png)
+
 
 ## Design Highlights
 
