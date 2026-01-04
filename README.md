@@ -192,9 +192,9 @@ memory-simulator/
 ---
 ## 📸 Demonstration
 
-### 🎥 Demo Video
+## 🎥 Demo Video
 
-https://github.com/ishantbhartii/Memory-Management-Simulator/blob/main/docs/demo.mp4
+[![Watch the demo](docs/demo_preview.png)](docs/demo.mp4)
 
 
 ### Allocation & Fragmentation
