@@ -1,5 +1,6 @@
 color off
 init
+policy clock
 create 4
 setproc 4
 access 0
@@ -9,5 +10,6 @@ access 12288
 stats
 access 0
 access 4096
+access 4 0 write
 stats
 quit

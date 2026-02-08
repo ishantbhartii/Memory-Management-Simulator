@@ -26,7 +26,7 @@ enum class AllocationMode
     AUTO,       // decide automatically (power-of-two → buddy)
     PHYSICAL,   // always use physical allocator
     BUDDY,
-    FORCED    // always use buddy allocator
+    FORCED    // explicit override (physical allocator when switching strategies)
 };
 
 
