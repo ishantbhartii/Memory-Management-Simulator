@@ -26,7 +26,7 @@ private:
     unordered_map<ProcessId, unique_ptr<PageTable>> process_tables_;
 
     PageReplacementPolicy replacement_policy_;
-    queue<pair<ProcessId, Address>> fifo_queue_;
+    queue<size_t> fifo_queue_;
     unordered_map<ProcessId, unordered_map<Address, size_t>> access_counts_;
     unordered_map<ProcessId, unordered_map<Address, size_t>> access_times_;
 

@@ -114,7 +114,17 @@ bool VirtualMemoryManager::handlePageFault(ProcessId process_id, Address virtual
         return false;
     }
 
-    return it->second->addMapping(virtual_page, frame);
+    if (!it->second->addMapping(virtual_page, frame))
+    {
+        return false;
+    }
+
+    if (replacement_policy_ == PageReplacementPolicy::FIFO)
+    {
+        fifo_queue_.push(frame);
+    }
+
+    return true;
 }
 void VirtualMemoryManager::invalidatePageUsingFrame(size_t frame)
 {
@@ -157,6 +167,16 @@ void VirtualMemoryManager::updatePageAccess(ProcessId process_id, Address virtua
 
 Address VirtualMemoryManager::selectFIFOVictim()
 {
+    while (!fifo_queue_.empty())
+    {
+        size_t frame = fifo_queue_.front();
+        fifo_queue_.pop();
+        if (frame < num_frames_ && frame_allocation_[frame])
+        {
+            return frame;
+        }
+    }
+
     for (size_t i = 0; i < num_frames_; ++i)
     {
         if (frame_allocation_[i])
@@ -265,6 +285,10 @@ bool VirtualMemoryManager::allocatePages(ProcessId process_id, size_t num_pages)
 
         Address virtual_page = frame;
         it->second->addMapping(virtual_page, frame);
+        if (replacement_policy_ == PageReplacementPolicy::FIFO)
+        {
+            fifo_queue_.push(frame);
+        }
     }
 
     return true;
